@@ -72,7 +72,7 @@ var UI = (function () {
     }
     return '<article class="card' + cls + '" data-id="' + esc(it.id) + '">' +
       '<div class="meta">' + (kind ? '<span class="kind">' + kind + '</span>' : '') +
-      '<span>' + esc(g.emoji) + '</span><span class="src">' + esc(kind ? g.name : it.source) + '</span>' +
+      (it.kind === '🐟' ? '' : '<span>' + esc(g.emoji) + '</span><span class="src">' + esc(kind ? g.name : it.source) + '</span>') +
       '<span class="time">' + relTime(it.published) + '</span></div>' +
       '<div class="title">' + (it.followup ? '<span class="tag">🔁続報</span>' : '') + esc(it.title) + '</div>' +
       (lead ? '<div class="lead">' + esc(lead) + '</div>' : '') +
