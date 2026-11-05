@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#e9e7e1">
+<title>まとめ通信</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="まとめ通信">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<header class="top">
+  <h1 id="pageTitle">まとめ通信</h1>
+  <button id="reloadBtn" class="icon-btn" aria-label="読み直す">↻</button>
+</header>
+
+<div id="banner" class="banner" hidden></div>
+
+<main>
+  <section id="view-home" class="view">
+    <div id="chips" class="chips"></div>
+    <div id="timeline" class="list"></div>
+  </section>
+  <section id="view-later" class="view" hidden>
+    <div id="laterList" class="list"></div>
+  </section>
+  <section id="view-archive" class="view" hidden>
+    <div class="search-row">
+      <input id="archiveQ" type="search" placeholder="見出しで検索" enterkeyhint="search">
+      <select id="archiveGenre"></select>
+    </div>
+    <div id="archiveInfo" class="info"></div>
+    <div id="archiveList" class="list"></div>
+  </section>
+  <section id="view-settings" class="view" hidden>
+    <div id="settingsBody"></div>
+  </section>
+</main>
+
+<nav class="tabs">
+  <button data-tab="home" class="on"><span>🏠</span>ホーム</button>
+  <button data-tab="later"><span>🔖</span>あとで見る<b id="laterBadge" hidden></b></button>
+  <button data-tab="archive"><span>🗂</span>アーカイブ</button>
+  <button data-tab="settings"><span>⚙️</span>設定</button>
+</nav>
+
+<div id="sheetBack" class="sheet-back" hidden></div>
+<div id="sheet" class="sheet" hidden></div>
+<div id="toast" class="toast" hidden></div>
+
+<script src="js/api.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/home.js"></script>
+<script src="js/sheets.js"></script>
+<script src="js/pages.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
