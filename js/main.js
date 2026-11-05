@@ -68,6 +68,32 @@ var Main = (function () {
     if (document.visibilityState === 'visible' && tab === 'home' && Date.now() - lastLoad > 5 * 60000) reload();
   });
 
+  // アプリとしてインストール（競輪予想AIと同じ対処・10/9）
+  // 🪤Pixel の Chrome は「︙→ホーム画面に追加」で naoto-web.github.io の新しいアプリを「すでにインストールされています」と誤判定する
+  //   ⇒ ページ側からインストール画面を直接呼ぶボタン（beforeinstallprompt）。合図が来たときだけ出す
+  var installEvt = null;
+  window.addEventListener('beforeinstallprompt', function (e) {
+    e.preventDefault();
+    installEvt = e;
+    if (document.getElementById('installBtn')) return;
+    var b = document.createElement('button');
+    b.id = 'installBtn';
+    b.className = 'install-btn';
+    b.textContent = 'アプリとしてインストール';
+    b.addEventListener('click', function () {
+      if (!installEvt) return;
+      installEvt.prompt();
+      installEvt.userChoice.then(function (r) {
+        if (r && r.outcome === 'accepted') { installEvt = null; b.textContent = 'インストール中…'; }
+      }).catch(function () {});
+    });
+    document.querySelector('.top').insertBefore(b, document.getElementById('reloadBtn'));
+  });
+  window.addEventListener('appinstalled', function () {
+    var b = document.getElementById('installBtn');
+    if (b) b.remove();
+  });
+
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () { navigator.serviceWorker.register('./sw.js').catch(function () {}); });
   }
