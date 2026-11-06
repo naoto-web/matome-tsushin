@@ -85,7 +85,21 @@ var Home = (function () {
   var el = document.getElementById('timeline');
   var chipsEl = document.getElementById('chips');
 
-  function setItems(list) { items = list; render(); }
+  // 読み直しても、このアプリを開いている間に読んだ記事は残す（戻ってきてから👍👎を押せるように）
+  function setItems(list) {
+    var ids = {};
+    list.forEach(function (it) { ids[it.id] = true; });
+    var kept = items.filter(function (it) { return it.read && !ids[it.id]; });
+    items = list.concat(kept).sort(function (a, b) { return String(b.added).localeCompare(String(a.added)); });
+    render();
+  }
+
+  function markRead(it, card) {
+    if (!it) return;
+    it.read = true;
+    if (card) card.outerHTML = UI.cardHtml(it);
+    renderChips();
+  }
 
   function lookup(id) {
     for (var i = 0; i < items.length; i++) if (String(items[i].id) === String(id)) return items[i];
@@ -111,8 +125,9 @@ var Home = (function () {
   }
 
   function renderChips() {
-    var counts = { all: items.length, croco: 0 };
-    items.forEach(function (it) {
+    var unread = items.filter(function (it) { return !it.read; });
+    var counts = { all: unread.length, croco: 0 };
+    unread.forEach(function (it) {
       counts[it.genre] = (counts[it.genre] || 0) + 1;
       if (UI.isCrocoCard(it)) counts.croco++;
     });
@@ -132,7 +147,7 @@ var Home = (function () {
     renderChips();
     var list = visible();
     if (!list.length) {
-      el.innerHTML = '<div class="empty"><b>全部見た 🎉</b>' + (items.length ? 'このジャンルの新着はもうありません' : '次の新着は1時間おきに届きます') + '</div>';
+      el.innerHTML = '<div class="empty"><b>全部見た 🎉</b>' + (items.length ? 'このジャンルの新着はもうありません' : '次の新着は3時間おき（7〜22時）に届きます') + '</div>';
       return;
     }
     el.innerHTML = list.map(function (it) { return UI.cardHtml(it); }).join('');
@@ -146,7 +161,7 @@ var Home = (function () {
     window.scrollTo(0, 0);
   });
 
-  Cards.bind(el, lookup, { swipe: true, onRead: remove, onSwipe: remove });
+  Cards.bind(el, lookup, { swipe: true, onRead: markRead, onSwipe: remove });
 
-  return { setItems: setItems, remove: remove, lookup: lookup };
+  return { setItems: setItems, remove: remove, markRead: markRead, lookup: lookup };
 })();
