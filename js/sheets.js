@@ -34,7 +34,8 @@ var Sheets = (function () {
     }
     html += '<div class="row">' +
       (it.url ? '<a class="btn wide" href="' + esc(it.url) + '" target="_blank" rel="noopener">元の記事へ</a>' : '') +
-      '<button class="btn sub" data-fb="good">👍</button><button class="btn sub" data-fb="bad">👎</button></div>';
+      '<button class="btn sub' + (it.fb === 'good' ? ' on' : '') + '" data-fb="good">👍</button>' +
+      '<button class="btn sub' + (it.fb === 'bad' ? ' on' : '') + '" data-fb="bad">👎</button></div>';
     var sh = UI.openSheet(html, onClose);
     sh.querySelectorAll('[data-fb]').forEach(function (btn) {
       btn.addEventListener('click', function () {
@@ -69,6 +70,8 @@ var Sheets = (function () {
       var r = sh.querySelector('input[name=fbReason]:checked');
       var data = { id: it.id, good: good, reason: r ? r.value : '', comment: sh.querySelector('#fbComment').value.trim() };
       UI.closeSheet();
+      it.fb = good ? 'good' : 'bad';
+      UI.markFb(it);
       UI.toast(good ? '👍 送りました' : '👎 送りました');
       API.call('feedback', data).catch(function (err) { UI.toast('送れませんでした：' + err.message); });
     });
