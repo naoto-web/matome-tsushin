@@ -23,7 +23,7 @@ var Later = (function () {
     el.innerHTML = items.map(function (it) { return UI.cardHtml(it, { state: it.state === '未読' ? '' : STATE_LABEL[it.state] }); }).join('');
   }
   Cards.bind(el, makeLookup(function () { return items; }), {
-    onRead: function (it) { it.state = '既読'; Home.remove(Home.lookup(it.id)); },
+    onRead: function (it) { it.state = '既読'; Home.markRead(Home.lookup(it.id), document.querySelector('#timeline .card[data-id="' + it.id + '"]')); },
     onLaterOff: function (it) { items = items.filter(function (x) { return x !== it; }); setTimeout(render, 300); }
   });
   return { load: load };
