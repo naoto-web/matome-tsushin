@@ -61,7 +61,8 @@ var UI = (function () {
   function cardHtml(it, opt) {
     opt = opt || {};
     var g = genre(it.genre);
-    var cls = it.kind === '⭐' ? ' star' : it.kind === '🐟' ? ' uroko' : '';
+    var cls = (it.kind === '⭐' ? ' star' : it.kind === '🐟' ? ' uroko' : '') + (it.read ? ' read' : '');
+    var stateText = opt.state || (it.read ? '既読（アプリを閉じるまでここに残ります）' : '');
     var kind = it.kind === '⭐' ? '⭐ クロコのイチオシ' : it.kind === '🐟' ? '🐟 今日の目からうろこ' : '';
     var lead = '';
     if (it.kind === '⭐') {
@@ -76,13 +77,22 @@ var UI = (function () {
       '<span class="time">' + relTime(it.published) + '</span></div>' +
       '<div class="title">' + (it.followup ? '<span class="tag">🔁続報</span>' : '') + esc(it.title) + '</div>' +
       (lead ? '<div class="lead">' + esc(lead) + '</div>' : '') +
-      (opt.state ? '<div class="state">' + esc(opt.state) + '</div>' : '') +
+      (stateText ? '<div class="state">' + esc(stateText) + '</div>' : '') +
       '<div class="acts">' +
-      '<button data-act="good" aria-label="いいね">👍</button>' +
-      '<button data-act="bad" aria-label="いまいち">👎</button>' +
+      '<button data-act="good" class="' + (it.fb === 'good' ? 'on' : '') + '" aria-label="いいね">👍</button>' +
+      '<button data-act="bad" class="' + (it.fb === 'bad' ? 'on' : '') + '" aria-label="いまいち">👎</button>' +
       '<button data-act="later" class="' + (it.later ? 'on' : '') + '" aria-label="あとで見る">🔖</button>' +
       '</div></article>';
   }
 
-  return { state: state, esc: esc, relTime: relTime, toast: toast, openSheet: openSheet, closeSheet: closeSheet, genre: genre, isCrocoCard: isCrocoCard, cardHtml: cardHtml };
+  // 👍👎を送ったら、画面に出ている同じ記事のカード全部（ホーム・あとで見る・アーカイブ）のボタンに色を付ける
+  function markFb(it) {
+    document.querySelectorAll('.card[data-id="' + String(it.id).replace(/"/g, '') + '"]').forEach(function (c) {
+      var g = c.querySelector('[data-act="good"]'), b = c.querySelector('[data-act="bad"]');
+      if (g) g.classList.toggle('on', it.fb === 'good');
+      if (b) b.classList.toggle('on', it.fb === 'bad');
+    });
+  }
+
+  return { state: state, esc: esc, markFb: markFb, relTime: relTime, toast: toast, openSheet: openSheet, closeSheet: closeSheet, genre: genre, isCrocoCard: isCrocoCard, cardHtml: cardHtml };
 })();
