@@ -131,6 +131,12 @@ textarea { width: 100%; min-height: 64px; resize: vertical; }
 .sheet .kind-line { font-size: 12px; font-weight: 700; color: var(--gold); }
 .sheet .kind-line.uroko { color: var(--uroko); }
 .sheet .kind-line.ippon { color: var(--ippon); }
+/* 🎁の控え2本（本命より控えめに） */
+.sheet .hikae { border: 1px solid var(--line); background: var(--sunk); border-radius: 10px; padding: 8px 10px; margin-top: 8px; }
+.sheet .hikae .hk-head { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; }
+.sheet .hikae .tag { font-size: 11px; font-weight: 700; color: var(--ippon); background: var(--ippon-soft); border-radius: 4px; padding: 0 5px; }
+.sheet .row.small { margin-top: 6px; }
+.sheet .row.small .btn { padding: 4px 10px; font-size: 13px; }
 .sheet .row { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
 .sheet .close { position: absolute; top: 8px; right: 10px; border: none; background: none; font-size: 22px; color: var(--fg-dim); }
 .btn { border: 1px solid var(--btn-line); background: var(--btn); color: var(--on-btn); border-radius: 10px; padding: 8px 14px; font-weight: 700; }
