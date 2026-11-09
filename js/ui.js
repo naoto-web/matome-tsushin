@@ -59,8 +59,11 @@ var UI = (function () {
 
   // 🎁の状態の一言＝見た／やめた／次の1本まで残る
   function ipponState(it) {
-    if (it.done === '見た') return '✅ 見た';
-    if (it.done === 'やめた') return 'やめた（次の1本の選び方に使います）';
+    var d = it.done || {};
+    var vals = Object.keys(d).map(function (k) { return d[k]; });
+    if (vals.indexOf('見た') >= 0) return d['0'] === '見た' ? '✅ 見た' : '✅ 控えを見た';
+    if (d['0'] === 'やめた' && vals.length === 1) return 'やめた（開くと控えが2本あります）';
+    if (vals.length) return 'やめた（次の1本の選び方に使います）';
     return it.read ? '次の1本が届くまでここに残ります' : '';
   }
 
