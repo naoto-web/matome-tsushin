@@ -23,20 +23,27 @@ var Sheets = (function () {
         (b.zatsudan ? '<h3>💬 雑談ネタ</h3><p>' + esc(b.zatsudan) + '</p>' : '') +
         (b.chinami ? '<h3>🔍 ちなみに</h3><p>' + esc(b.chinami) + '</p>' : '');
     } else if (it.kind === '🎁') {
-      // 🎁：どんな作品？／なぜ合いそう？／最初の一歩／どこで見る＋下に控え2本（軽め・1歩外し）
+      // 🎁：どんな作品？／なぜ合いそう？／最初の一歩／どこで見る＋下に控え2本（軽め・🔥か📼）
       var d = it.done || {};
+      // 💑デートの週＝行き先＋ご飯屋さん（gohan）。見出しとボタンの文字だけ変える
+      var date = /デート/.test(b.shurui || '');
+      var gohan = b.gohan || null;
       var doneBtns = function (w, small) {
         return '<div class="row' + (small ? ' small' : '') + '">' +
-          '<button class="btn sub' + (d[w] === '見た' ? ' on' : '') + '" data-done="見た" data-w="' + w + '">👀 見た</button>' +
+          '<button class="btn sub' + (d[w] === '見た' ? ' on' : '') + '" data-done="見た" data-w="' + w + '">' + (date ? '👣 行った' : '👀 見た') + '</button>' +
           '<button class="btn sub' + (d[w] === 'やめた' ? ' on' : '') + '" data-done="やめた" data-w="' + w + '">🙅 やめた</button></div>';
       };
       var hikae = [].concat(b.hikae || []).slice(0, 2);
       html = '<div class="kind-line ippon">🎁 今週の1本　' + esc(b.shurui || '') + '</div>' +
         '<h2>' + esc(it.title) + '</h2>' +
-        (b.naiyou ? '<h3>🎬 どんな作品？</h3><ul>' + lines(b.naiyou).map(function (s) { return '<li>' + esc(s) + '</li>'; }).join('') + '</ul>' : '') +
+        (b.naiyou ? '<h3>' + (date ? '🗺 どんな場所？' : '🎬 どんな作品？') + '</h3><ul>' + lines(b.naiyou).map(function (s) { return '<li>' + esc(s) + '</li>'; }).join('') + '</ul>' : '') +
         (b.naze ? '<h3>🎯 なぜNaotoに合いそう？</h3><p>' + esc(b.naze) + '</p>' : '') +
         (b.ippo ? '<h3>🚪 最初の一歩</h3><p>' + esc(b.ippo) + '</p>' : '') +
-        (b.doko ? '<h3>📍 どこで見る</h3><p>' + esc(b.doko) + '</p>' : '') +
+        (b.doko ? '<h3>' + (date ? '🚃 行き方' : '📍 どこで見る') + '</h3><p>' + esc(b.doko) + '</p>' : '') +
+        (gohan && gohan.name ? '<h3>🍽 セットのご飯屋さん</h3><p><b>' + esc(gohan.name) + '</b>' +
+          (gohan.genre || gohan.yosan ? '（' + esc([gohan.genre, gohan.yosan].filter(Boolean).join('・')) + '）' : '') + '</p>' +
+          (gohan.naze ? '<p>' + esc(gohan.naze) + '</p>' : '') +
+          '<p class="note">' + esc(gohan.eigyo || '') + (gohan.url ? '　<a href="' + esc(gohan.url) + '" target="_blank" rel="noopener">お店のページへ</a>' : '') + '</p>' : '') +
         (b.hyoi ? '<h3>👫 ひょいと</h3><p>' + esc(b.hyoi) + '</p>' : '') +
         '<div class="note">合わなかったら、途中でやめてOK。「やめた」も次の1本選びの材料になります。</div>' +
         doneBtns('0') +
@@ -44,7 +51,8 @@ var Sheets = (function () {
           return '<div class="hikae">' +
             '<div class="hk-head">' + (h.label ? '<span class="tag">' + esc(h.label) + '</span>' : '') + '<b>' + esc(h.title || '') + '</b></div>' +
             (h.naiyou ? '<p>' + esc(h.naiyou) + '</p>' : '') +
-            (h.doko ? '<p class="note">📍 ' + esc(h.doko) + (h.url ? '　<a href="' + esc(h.url) + '" target="_blank" rel="noopener">見る場所へ</a>' : '') + '</p>' : '') +
+            (h.doko ? '<p class="note">📍 ' + esc(h.doko) + (h.url ? '　<a href="' + esc(h.url) + '" target="_blank" rel="noopener">' + (date ? '場所のページへ' : '見る場所へ') + '</a>' : '') + '</p>' : '') +
+            (h.gohan ? '<p class="note">🍽 ' + esc(h.gohan) + (h.gohanUrl ? '　<a href="' + esc(h.gohanUrl) + '" target="_blank" rel="noopener">お店のページへ</a>' : '') + '</p>' : '') +
             doneBtns(String(i + 1), true) + '</div>';
         }).join('') : '');
     } else {
@@ -58,7 +66,7 @@ var Sheets = (function () {
         }).join('') + '</ul>' : '');
     }
     html += '<div class="row">' +
-      (it.url ? '<a class="btn wide" href="' + esc(it.url) + '" target="_blank" rel="noopener">' + (it.kind === '🎁' ? '見る場所へ' : '元の記事へ') + '</a>' : '') +
+      (it.url ? '<a class="btn wide" href="' + esc(it.url) + '" target="_blank" rel="noopener">' + (it.kind === '🎁' ? (date ? '場所のページへ' : '見る場所へ') : '元の記事へ') + '</a>' : '') +
       '<button class="btn sub' + (it.fb === 'good' ? ' on' : '') + '" data-fb="good">👍</button>' +
       '<button class="btn sub' + (it.fb === 'bad' ? ' on' : '') + '" data-fb="bad">👎</button></div>';
     var sh = UI.openSheet(html, onClose);
@@ -78,7 +86,7 @@ var Sheets = (function () {
         it.done[w] = result;
         UI.closeSheet();
         document.querySelectorAll('.card[data-id="' + String(it.id).replace(/"/g, '') + '"] .state').forEach(function (s) { s.textContent = UI.ipponState(it); });
-        UI.toast(result === '見た' ? '👀 見た、を記録しました' : '🙅 やめた、を記録しました');
+        UI.toast(result === '見た' ? (date ? '👣 行った、を記録しました' : '👀 見た、を記録しました') : '🙅 やめた、を記録しました');
         API.call('ippon', { id: it.id, result: result, w: Number(w), title: h ? h.title : '' }).catch(function (err) { UI.toast('送れませんでした：' + err.message); });
       });
     });
