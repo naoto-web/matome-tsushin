@@ -1,6 +1,6 @@
 // home.js — ホーム（ジャンル絞り込み＋タイムライン）と、カードの操作（タップ・スワイプ・👍👎🔖）
 var Cards = (function () {
-  // 記事を開く：新着＝元のサイト／⭐🐟＝アプリ内で中身。開いたら既読
+  // 記事を開く：新着＝元のサイト／⭐🐟🎁＝アプリ内で中身。開いたら既読
   function open(it, onRead) {
     if (UI.isCrocoCard(it)) {
       Sheets.detail(it, onRead);
@@ -90,7 +90,10 @@ var Home = (function () {
     var ids = {};
     list.forEach(function (it) { ids[it.id] = true; });
     var kept = items.filter(function (it) { return it.read && !ids[it.id]; });
-    items = list.concat(kept).sort(function (a, b) { return String(b.added).localeCompare(String(a.added)); });
+    // 🎁今週の1本はいつも一番上
+    items = list.concat(kept).sort(function (a, b) {
+      return ((b.kind === '🎁') - (a.kind === '🎁')) || String(b.added).localeCompare(String(a.added));
+    });
     render();
   }
 
