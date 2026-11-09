@@ -23,7 +23,14 @@ var Sheets = (function () {
         (b.zatsudan ? '<h3>💬 雑談ネタ</h3><p>' + esc(b.zatsudan) + '</p>' : '') +
         (b.chinami ? '<h3>🔍 ちなみに</h3><p>' + esc(b.chinami) + '</p>' : '');
     } else if (it.kind === '🎁') {
-      // 🎁：どんな作品？／なぜ合いそう？／最初の一歩／どこで見る
+      // 🎁：どんな作品？／なぜ合いそう？／最初の一歩／どこで見る＋下に控え2本（軽め・1歩外し）
+      var d = it.done || {};
+      var doneBtns = function (w, small) {
+        return '<div class="row' + (small ? ' small' : '') + '">' +
+          '<button class="btn sub' + (d[w] === '見た' ? ' on' : '') + '" data-done="見た" data-w="' + w + '">👀 見た</button>' +
+          '<button class="btn sub' + (d[w] === 'やめた' ? ' on' : '') + '" data-done="やめた" data-w="' + w + '">🙅 やめた</button></div>';
+      };
+      var hikae = [].concat(b.hikae || []).slice(0, 2);
       html = '<div class="kind-line ippon">🎁 今週の1本　' + esc(b.shurui || '') + '</div>' +
         '<h2>' + esc(it.title) + '</h2>' +
         (b.naiyou ? '<h3>🎬 どんな作品？</h3><ul>' + lines(b.naiyou).map(function (s) { return '<li>' + esc(s) + '</li>'; }).join('') + '</ul>' : '') +
@@ -32,9 +39,14 @@ var Sheets = (function () {
         (b.doko ? '<h3>📍 どこで見る</h3><p>' + esc(b.doko) + '</p>' : '') +
         (b.hyoi ? '<h3>👫 ひょいと</h3><p>' + esc(b.hyoi) + '</p>' : '') +
         '<div class="note">合わなかったら、途中でやめてOK。「やめた」も次の1本選びの材料になります。</div>' +
-        '<div class="row">' +
-        '<button class="btn sub' + (it.done === '見た' ? ' on' : '') + '" data-done="見た">👀 見た</button>' +
-        '<button class="btn sub' + (it.done === 'やめた' ? ' on' : '') + '" data-done="やめた">🙅 やめた</button></div>';
+        doneBtns('0') +
+        (hikae.length ? '<h3>🔁 気分じゃなければ、こっち</h3>' + hikae.map(function (h, i) {
+          return '<div class="hikae">' +
+            '<div class="hk-head">' + (h.label ? '<span class="tag">' + esc(h.label) + '</span>' : '') + '<b>' + esc(h.title || '') + '</b></div>' +
+            (h.naiyou ? '<p>' + esc(h.naiyou) + '</p>' : '') +
+            (h.doko ? '<p class="note">📍 ' + esc(h.doko) + (h.url ? '　<a href="' + esc(h.url) + '" target="_blank" rel="noopener">見る場所へ</a>' : '') + '</p>' : '') +
+            doneBtns(String(i + 1), true) + '</div>';
+        }).join('') : '');
     } else {
       html = '<div class="kind-line uroko">🐟 今日の目からうろこ</div>' +
         '<h2>' + esc(it.title) + '</h2>' +
@@ -59,11 +71,15 @@ var Sheets = (function () {
     });
     sh.querySelectorAll('[data-done]').forEach(function (btn) {
       btn.addEventListener('click', function () {
-        it.done = btn.dataset.done;
+        var w = btn.dataset.w || '0';
+        var result = btn.dataset.done;
+        var h = w === '0' ? null : [].concat((it.body || {}).hikae || [])[Number(w) - 1];
+        it.done = it.done || {};
+        it.done[w] = result;
         UI.closeSheet();
         document.querySelectorAll('.card[data-id="' + String(it.id).replace(/"/g, '') + '"] .state').forEach(function (s) { s.textContent = UI.ipponState(it); });
-        UI.toast(it.done === '見た' ? '👀 見た、を記録しました' : '🙅 やめた、を記録しました');
-        API.call('ippon', { id: it.id, result: it.done }).catch(function (err) { UI.toast('送れませんでした：' + err.message); });
+        UI.toast(result === '見た' ? '👀 見た、を記録しました' : '🙅 やめた、を記録しました');
+        API.call('ippon', { id: it.id, result: result, w: Number(w), title: h ? h.title : '' }).catch(function (err) { UI.toast('送れませんでした：' + err.message); });
       });
     });
   }
