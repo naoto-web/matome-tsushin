@@ -55,25 +55,35 @@ var UI = (function () {
     return { key: key, name: key || 'その他', emoji: '📌' };
   }
 
-  function isCrocoCard(it) { return it.kind === '⭐' || it.kind === '🐟'; }
+  function isCrocoCard(it) { return it.kind === '⭐' || it.kind === '🐟' || it.kind === '🎁'; }
+
+  // 🎁の状態の一言＝見た／やめた／次の1本まで残る
+  function ipponState(it) {
+    if (it.done === '見た') return '✅ 見た';
+    if (it.done === 'やめた') return 'やめた（次の1本の選び方に使います）';
+    return it.read ? '次の1本が届くまでここに残ります' : '';
+  }
 
   // カード1枚（ホーム・あとで見る・アーカイブで共通）
   function cardHtml(it, opt) {
     opt = opt || {};
     var g = genre(it.genre);
-    var cls = (it.kind === '⭐' ? ' star' : it.kind === '🐟' ? ' uroko' : '') + (it.read ? ' read' : '');
-    var stateText = opt.state || (it.read ? '既読（アプリを閉じるまでここに残ります）' : '');
-    var kind = it.kind === '⭐' ? '⭐ クロコのイチオシ' : it.kind === '🐟' ? '🐟 今日の目からうろこ' : '';
+    var cls = (it.kind === '⭐' ? ' star' : it.kind === '🐟' ? ' uroko' : it.kind === '🎁' ? ' ippon' : '') + (it.read ? ' read' : '');
+    var stateText = opt.state || (it.kind === '🎁' ? ipponState(it) : it.read ? '既読（アプリを閉じるまでここに残ります）' : '');
+    var kind = it.kind === '⭐' ? '⭐ クロコのイチオシ' : it.kind === '🐟' ? '🐟 今日の目からうろこ' : it.kind === '🎁' ? '🎁 今週の1本' : '';
     var lead = '';
     if (it.kind === '⭐') {
       var s = it.body.sanko;
       lead = Array.isArray(s) ? s[0] : (s || '');
     } else if (it.kind === '🐟') {
       lead = it.body.naze ? String(it.body.naze).split('\n')[0] : '';
+    } else if (it.kind === '🎁') {
+      lead = it.body.ippo ? '🚪 ' + it.body.ippo : '';
     }
+    var src = it.kind === '🐟' ? '' : it.kind === '🎁' ? '<span class="src">' + esc(it.body.shurui || '') + '</span>' :
+      '<span>' + esc(g.emoji) + '</span><span class="src">' + esc(kind ? g.name : it.source) + '</span>';
     return '<article class="card' + cls + '" data-id="' + esc(it.id) + '">' +
-      '<div class="meta">' + (kind ? '<span class="kind">' + kind + '</span>' : '') +
-      (it.kind === '🐟' ? '' : '<span>' + esc(g.emoji) + '</span><span class="src">' + esc(kind ? g.name : it.source) + '</span>') +
+      '<div class="meta">' + (kind ? '<span class="kind">' + kind + '</span>' : '') + src +
       '<span class="time">' + relTime(it.published) + '</span></div>' +
       '<div class="title">' + (it.followup ? '<span class="tag">🔁続報</span>' : '') + esc(it.title) + '</div>' +
       (lead ? '<div class="lead">' + esc(lead) + '</div>' : '') +
@@ -94,5 +104,5 @@ var UI = (function () {
     });
   }
 
-  return { state: state, esc: esc, markFb: markFb, relTime: relTime, toast: toast, openSheet: openSheet, closeSheet: closeSheet, genre: genre, isCrocoCard: isCrocoCard, cardHtml: cardHtml };
+  return { state: state, esc: esc, markFb: markFb, ipponState: ipponState, relTime: relTime, toast: toast, openSheet: openSheet, closeSheet: closeSheet, genre: genre, isCrocoCard: isCrocoCard, cardHtml: cardHtml };
 })();
