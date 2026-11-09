@@ -61,7 +61,9 @@ var UI = (function () {
   function ipponState(it) {
     var d = it.done || {};
     var vals = Object.keys(d).map(function (k) { return d[k]; });
-    if (vals.indexOf('見た') >= 0) return d['0'] === '見た' ? '✅ 見た' : '✅ 控えを見た';
+    // 💑デートの週は「見た」を「行った」と表示する（記録の値は見た のまま）
+    var did = /デート/.test((it.body || {}).shurui || '') ? '行った' : '見た';
+    if (vals.indexOf('見た') >= 0) return d['0'] === '見た' ? '✅ ' + did : '✅ 控えを' + did;
     if (d['0'] === 'やめた' && vals.length === 1) return 'やめた（開くと控えが2本あります）';
     if (vals.length) return 'やめた（次の1本の選び方に使います）';
     return it.read ? '次の1本が届くまでここに残ります' : '';
