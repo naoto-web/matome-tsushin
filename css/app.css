@@ -18,6 +18,8 @@
   --gold-soft: #fbefd5;
   --uroko: #0f7f87;
   --uroko-soft: #dff1f2;
+  --ippon: #b0306a;
+  --ippon-soft: #fbe4ef;
   --ok: #16804a;
   --ng: #c62828;
   --ng-soft: #fbe1e1;
@@ -74,6 +76,10 @@ main { padding: 0 16px; }
 .card .meta { display: flex; gap: 6px; align-items: center; font-size: 12px; color: var(--fg-dim); }
 .card .meta .kind { font-weight: 700; color: var(--gold); }
 .card.uroko .meta .kind { color: var(--uroko); }
+.card.ippon { background: var(--ippon-soft); border-color: #eab3cc; }
+.card.ippon .meta .kind { color: var(--ippon); }
+/* 🎁は既読でも薄くしない（次の1本が届くまで主役） */
+.card.ippon.read .meta, .card.ippon.read .title, .card.ippon.read .lead { opacity: 1; }
 .card .meta .src { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 55%; }
 .card .meta .time { margin-left: auto; flex: none; }
 .card .title { font-size: 15.5px; font-weight: 600; margin: 3px 0 2px; word-break: break-word; }
@@ -124,6 +130,7 @@ textarea { width: 100%; min-height: 64px; resize: vertical; }
 .sheet ul { padding-left: 1.2em; margin: 4px 0; }
 .sheet .kind-line { font-size: 12px; font-weight: 700; color: var(--gold); }
 .sheet .kind-line.uroko { color: var(--uroko); }
+.sheet .kind-line.ippon { color: var(--ippon); }
 .sheet .row { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
 .sheet .close { position: absolute; top: 8px; right: 10px; border: none; background: none; font-size: 22px; color: var(--fg-dim); }
 .btn { border: 1px solid var(--btn-line); background: var(--btn); color: var(--on-btn); border-radius: 10px; padding: 8px 14px; font-weight: 700; }
