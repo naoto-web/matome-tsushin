@@ -1,4 +1,4 @@
-// sheets.js — 下から出るシート：⭐🐟の中身／👍👎の送信
+// sheets.js — 下から出るシート：⭐🐟🎁の中身／👍👎・見た/やめたの送信
 var Sheets = (function () {
   var esc = UI.esc;
 
@@ -22,6 +22,19 @@ var Sheets = (function () {
         (b.sanko ? '<h3>📝 3行で言うと</h3><ul>' + lines(b.sanko).map(function (s) { return '<li>' + esc(s) + '</li>'; }).join('') + '</ul>' : '') +
         (b.zatsudan ? '<h3>💬 雑談ネタ</h3><p>' + esc(b.zatsudan) + '</p>' : '') +
         (b.chinami ? '<h3>🔍 ちなみに</h3><p>' + esc(b.chinami) + '</p>' : '');
+    } else if (it.kind === '🎁') {
+      // 🎁：どんな作品？／なぜ合いそう？／最初の一歩／どこで見る
+      html = '<div class="kind-line ippon">🎁 今週の1本　' + esc(b.shurui || '') + '</div>' +
+        '<h2>' + esc(it.title) + '</h2>' +
+        (b.naiyou ? '<h3>🎬 どんな作品？</h3><ul>' + lines(b.naiyou).map(function (s) { return '<li>' + esc(s) + '</li>'; }).join('') + '</ul>' : '') +
+        (b.naze ? '<h3>🎯 なぜNaotoに合いそう？</h3><p>' + esc(b.naze) + '</p>' : '') +
+        (b.ippo ? '<h3>🚪 最初の一歩</h3><p>' + esc(b.ippo) + '</p>' : '') +
+        (b.doko ? '<h3>📍 どこで見る</h3><p>' + esc(b.doko) + '</p>' : '') +
+        (b.hyoi ? '<h3>👫 ひょいと</h3><p>' + esc(b.hyoi) + '</p>' : '') +
+        '<div class="note">合わなかったら、途中でやめてOK。「やめた」も次の1本選びの材料になります。</div>' +
+        '<div class="row">' +
+        '<button class="btn sub' + (it.done === '見た' ? ' on' : '') + '" data-done="見た">👀 見た</button>' +
+        '<button class="btn sub' + (it.done === 'やめた' ? ' on' : '') + '" data-done="やめた">🙅 やめた</button></div>';
     } else {
       html = '<div class="kind-line uroko">🐟 今日の目からうろこ</div>' +
         '<h2>' + esc(it.title) + '</h2>' +
@@ -33,7 +46,7 @@ var Sheets = (function () {
         }).join('') + '</ul>' : '');
     }
     html += '<div class="row">' +
-      (it.url ? '<a class="btn wide" href="' + esc(it.url) + '" target="_blank" rel="noopener">元の記事へ</a>' : '') +
+      (it.url ? '<a class="btn wide" href="' + esc(it.url) + '" target="_blank" rel="noopener">' + (it.kind === '🎁' ? '見る場所へ' : '元の記事へ') + '</a>' : '') +
       '<button class="btn sub' + (it.fb === 'good' ? ' on' : '') + '" data-fb="good">👍</button>' +
       '<button class="btn sub' + (it.fb === 'bad' ? ' on' : '') + '" data-fb="bad">👎</button></div>';
     var sh = UI.openSheet(html, onClose);
@@ -42,6 +55,15 @@ var Sheets = (function () {
         var good = btn.dataset.fb === 'good';
         UI.closeSheet();
         feedback(it, good);
+      });
+    });
+    sh.querySelectorAll('[data-done]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        it.done = btn.dataset.done;
+        UI.closeSheet();
+        document.querySelectorAll('.card[data-id="' + String(it.id).replace(/"/g, '') + '"] .state').forEach(function (s) { s.textContent = UI.ipponState(it); });
+        UI.toast(it.done === '見た' ? '👀 見た、を記録しました' : '🙅 やめた、を記録しました');
+        API.call('ippon', { id: it.id, result: it.done }).catch(function (err) { UI.toast('送れませんでした：' + err.message); });
       });
     });
   }
