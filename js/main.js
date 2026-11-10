@@ -1,7 +1,7 @@
 // main.js — 起動・タブ切り替え・読み直し（前回の中身をすぐ出してから最新を取りに行く）
 var Main = (function () {
   var CACHE = 'mt_init';
-  var TITLES = { home: 'まとめ通信', later: '🔖 あとで見る', archive: '🗂 アーカイブ', settings: '⚙️ 設定' };
+  var TITLES = { home: 'まとめ通信', news: '📰 新着', later: '🔖 あとで見る', archive: '🗂 アーカイブ', settings: '⚙️ 設定' };
   var tab = 'home';
   var laterCount = 0;
   var lastLoad = 0;
@@ -31,7 +31,7 @@ var Main = (function () {
     var p = tab === 'home' ? API.call('init').then(function (res) {
       apply(res);
       API.store(CACHE, JSON.stringify(res));
-    }) : tab === 'later' ? Later.load() : tab === 'archive' ? Archive.load() : Settings.load();
+    }) : tab === 'news' ? News.load() : tab === 'later' ? Later.load() : tab === 'archive' ? Archive.load() : Settings.load();
     return p.catch(function (err) { UI.toast('読めませんでした：' + err.message); })
       .then(function () { btn.classList.remove('spin'); });
   }
