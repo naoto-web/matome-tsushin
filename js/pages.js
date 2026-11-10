@@ -1,4 +1,4 @@
-// pages.js — 🔖あとで見る／🗂アーカイブ／⚙️設定
+// pages.js — 📰新着／🔖あとで見る／🗂アーカイブ／⚙️設定
 var STATE_LABEL = { '既読': '既読', '見なくていい': '見なくていい（スワイプ）', 'アーカイブ（未読）': '未読のまま3日たった', '未読': '未読' };
 
 function makeLookup(getList) {
@@ -8,6 +8,36 @@ function makeLookup(getList) {
     return null;
   };
 }
+
+// 📰新着＝クロコが要約していない普通の新着。ホームには出さない（読まなくても3日で消える）
+var News = (function () {
+  var items = [];
+  var el = document.getElementById('newsList');
+  var info = document.getElementById('newsInfo');
+
+  function load() {
+    info.textContent = '読み込み中…';
+    return API.call('shinchaku').then(function (res) {
+      items = res.items;
+      info.textContent = res.total + '件' + (res.total > items.length ? '（新しい' + items.length + '件を表示）' : '') + '・読まなくても3日で自動的に消えます';
+      render();
+    }).catch(function (err) { info.textContent = '読めませんでした：' + err.message; });
+  }
+  function render() {
+    el.innerHTML = items.length ? items.map(function (it) { return UI.cardHtml(it); }).join('')
+      : '<div class="empty"><b>新着なし</b>次の新着は3時間おき（7〜22時）に届きます</div>';
+  }
+  Cards.bind(el, makeLookup(function () { return items; }), {
+    swipe: true,
+    onRead: function (it, card) { it.read = true; if (card) card.outerHTML = UI.cardHtml(it); },
+    onSwipe: function (it, card) {
+      items = items.filter(function (x) { return x !== it; });
+      if (card) card.classList.add('gone');
+      setTimeout(render, 200);
+    }
+  });
+  return { load: load };
+})();
 
 var Later = (function () {
   var items = [];
