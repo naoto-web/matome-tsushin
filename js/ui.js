@@ -57,12 +57,23 @@ var UI = (function () {
 
   function isCrocoCard(it) { return it.kind === '⭐' || it.kind === '🐟' || it.kind === '🎁'; }
 
+  // 🎁の枠＝ふたり（映画・ドラマ・💑）／ひとり（漫画・YouTube）／曲。waku の無い古い行は ふたり
+  function ipponWaku(it) { return (it.body || {}).waku || 'ふたり'; }
+  function ipponLabel(it) {
+    var w = ipponWaku(it);
+    return w === '曲' ? '🎵 今週の1曲' : w === 'ひとり' ? '🎁 ひとりで見る1本' : '🎁 ふたりで見る1本';
+  }
+  // 「見た」の言い換え（記録の値は見た のまま）＝💑は行った／🎵は聴いた
+  function ipponDid(it) {
+    if (ipponWaku(it) === '曲') return '聴いた';
+    return /デート/.test((it.body || {}).shurui || '') ? '行った' : '見た';
+  }
+
   // 🎁の状態の一言＝見た／やめた／次の1本まで残る
   function ipponState(it) {
     var d = it.done || {};
     var vals = Object.keys(d).map(function (k) { return d[k]; });
-    // 💑デートの週は「見た」を「行った」と表示する（記録の値は見た のまま）
-    var did = /デート/.test((it.body || {}).shurui || '') ? '行った' : '見た';
+    var did = ipponDid(it);
     if (vals.indexOf('見た') >= 0) return d['0'] === '見た' ? '✅ ' + did : '✅ 控えを' + did;
     if (d['0'] === 'やめた' && vals.length === 1) return 'やめた（開くと控えが2本あります）';
     if (vals.length) return 'やめた（次の1本の選び方に使います）';
@@ -75,7 +86,7 @@ var UI = (function () {
     var g = genre(it.genre);
     var cls = (it.kind === '⭐' ? ' star' : it.kind === '🐟' ? ' uroko' : it.kind === '🎁' ? ' ippon' : '') + (it.read ? ' read' : '');
     var stateText = opt.state || (it.kind === '🎁' ? ipponState(it) : it.read ? '既読（アプリを閉じるまでここに残ります）' : '');
-    var kind = it.kind === '⭐' ? '⭐ クロコのイチオシ' : it.kind === '🐟' ? '🐟 今日の目からうろこ' : it.kind === '🎁' ? '🎁 今週の1本' : '';
+    var kind = it.kind === '⭐' ? '⭐ クロコのイチオシ' : it.kind === '🐟' ? '🐟 今日の目からうろこ' : it.kind === '🎁' ? ipponLabel(it) : '';
     var lead = '';
     if (it.kind === '⭐') {
       var s = it.body.sanko;
@@ -109,5 +120,5 @@ var UI = (function () {
     });
   }
 
-  return { state: state, esc: esc, markFb: markFb, ipponState: ipponState, relTime: relTime, toast: toast, openSheet: openSheet, closeSheet: closeSheet, genre: genre, isCrocoCard: isCrocoCard, cardHtml: cardHtml };
+  return { state: state, esc: esc, markFb: markFb, ipponState: ipponState, ipponWaku: ipponWaku, ipponLabel: ipponLabel, ipponDid: ipponDid, relTime: relTime, toast: toast, openSheet: openSheet, closeSheet: closeSheet, genre: genre, isCrocoCard: isCrocoCard, cardHtml: cardHtml };
 })();
