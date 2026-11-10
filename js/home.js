@@ -125,20 +125,18 @@ var Home = (function () {
   function visible() {
     return items.filter(function (it) {
       if (filter === 'all') return true;
-      if (filter === 'croco') return UI.isCrocoCard(it);
       return it.genre === filter;
     });
   }
 
   function renderChips() {
     var unread = items.filter(function (it) { return !it.read; });
-    var counts = { all: unread.length, croco: 0 };
+    // ホームはクロコの記事だけ（11/10）＝ジャンルのチップだけ出す
+    var counts = { all: unread.length };
     unread.forEach(function (it) {
-      counts[it.genre] = (counts[it.genre] || 0) + 1;
-      if (UI.isCrocoCard(it)) counts.croco++;
+      if (it.genre) counts[it.genre] = (counts[it.genre] || 0) + 1;
     });
     var chips = [{ key: 'all', label: '全部' }];
-    if (counts.croco) chips.push({ key: 'croco', label: '⭐🐟' });
     UI.state.genres.forEach(function (g) {
       if (g.on && counts[g.key]) chips.push({ key: g.key, label: g.emoji + ' ' + g.name });
     });
@@ -153,7 +151,7 @@ var Home = (function () {
     renderChips();
     var list = visible();
     if (!list.length) {
-      el.innerHTML = '<div class="empty"><b>全部見た 🎉</b>' + (items.length ? 'このジャンルの新着はもうありません' : '次の新着は3時間おき（7〜22時）に届きます') + '</div>';
+      el.innerHTML = '<div class="empty"><b>全部見た 🎉</b>' + (items.length ? 'このジャンルの記事はもうありません' : '次のクロコの記事は6時・12時・18時に届きます') + '</div>';
       return;
     }
     el.innerHTML = list.map(function (it) { return UI.cardHtml(it); }).join('');
