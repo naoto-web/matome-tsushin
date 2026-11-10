@@ -90,9 +90,12 @@ var Home = (function () {
     var ids = {};
     list.forEach(function (it) { ids[it.id] = true; });
     var kept = items.filter(function (it) { return it.read && !ids[it.id]; });
-    // 🎁今週の1本はいつも一番上
+    // 🎁今週の1本はいつも一番上（ふたり→ひとり→曲の順）
+    var order = { 'ふたり': 0, 'ひとり': 1, '曲': 2 };
     items = list.concat(kept).sort(function (a, b) {
-      return ((b.kind === '🎁') - (a.kind === '🎁')) || String(b.added).localeCompare(String(a.added));
+      return ((b.kind === '🎁') - (a.kind === '🎁')) ||
+        (a.kind === '🎁' ? order[UI.ipponWaku(a)] - order[UI.ipponWaku(b)] : 0) ||
+        String(b.added).localeCompare(String(a.added));
     });
     render();
   }
