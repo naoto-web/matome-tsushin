@@ -151,7 +151,7 @@ var Home = (function () {
     renderChips();
     var list = visible();
     if (!list.length) {
-      el.innerHTML = '<div class="empty"><b>全部見た 🎉</b>' + (items.length ? 'このジャンルの記事はもうありません' : '次のクロコの記事は6時・12時・18時に届きます') + '</div>';
+      el.innerHTML = '<div class="empty"><b>全部見た 🎉</b>' + (items.length ? 'このジャンルの記事はもうありません' : '次のクロコの記事は6時・12時・18時・21時に届きます') + '</div>';
       return;
     }
     el.innerHTML = list.map(function (it) { return UI.cardHtml(it); }).join('');
