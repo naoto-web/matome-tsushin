@@ -20,6 +20,17 @@ var UI = (function () {
     return (d.getMonth() + 1) + '/' + d.getDate() + ' ' + ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2);
   }
 
+  // 11/12 Naoto「何時間前より何日の何時がいい」→ 日時で出す
+  // クロコの記事（⭐🐟🎁）＝届いた回（登録日時の「時」まで）＝「11/12 6:00」
+  // 普通の新着＝公開日時＝「11/12 14:23」
+  function stampTime(s, hourOnly) {
+    if (!s) return '';
+    var d = new Date(String(s).replace(' ', 'T') + '+09:00');
+    if (isNaN(d)) return '';
+    var mm = hourOnly ? '00' : ('0' + d.getMinutes()).slice(-2);
+    return (d.getMonth() + 1) + '/' + d.getDate() + ' ' + d.getHours() + ':' + mm;
+  }
+
   var toastTimer;
   function toast(msg) {
     var el = document.getElementById('toast');
@@ -100,7 +111,7 @@ var UI = (function () {
       '<span>' + esc(g.emoji) + '</span><span class="src">' + esc(kind ? g.name : it.source) + '</span>';
     return '<article class="card' + cls + '" data-id="' + esc(it.id) + '">' +
       '<div class="meta">' + (kind ? '<span class="kind">' + kind + '</span>' : '') + src +
-      '<span class="time">' + relTime(it.published) + '</span></div>' +
+      '<span class="time">' + (kind ? stampTime(it.added, true) : stampTime(it.published, false)) + '</span></div>' +
       '<div class="title">' + (it.followup ? '<span class="tag">🔁続報</span>' : '') + esc(it.title) + '</div>' +
       (lead ? '<div class="lead">' + esc(lead) + '</div>' : '') +
       (stateText ? '<div class="state">' + esc(stateText) + '</div>' : '') +
