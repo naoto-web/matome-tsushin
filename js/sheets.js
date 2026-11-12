@@ -11,7 +11,7 @@ var Sheets = (function () {
     return esc(s).replace(/https?:\/\/[^\s<]+/g, function (u) { return '<a href="' + u + '" target="_blank" rel="noopener">' + u + '</a>'; });
   }
 
-  // ⭐：📝3行で言うと／💬雑談ネタ／🔍ちなみに／元の記事　🐟：💡なぜ？／💬雑談で使うなら／📚出典
+  // ⭐：📝3行で言うと／🔍ちなみに／🗣クロコのコメント／元の記事（💬雑談ネタは11/12廃止＝古い記事だけ出る）　🐟：💡なぜ？／💬雑談で使うなら／📚出典
   function detail(it, onClose) {
     var b = it.body || {};
     var g = UI.genre(it.genre);
@@ -21,7 +21,8 @@ var Sheets = (function () {
         '<h2>' + esc(it.title) + '</h2>' +
         (b.sanko ? '<h3>📝 3行で言うと</h3><ul>' + lines(b.sanko).map(function (s) { return '<li>' + esc(s) + '</li>'; }).join('') + '</ul>' : '') +
         (b.zatsudan ? '<h3>💬 雑談ネタ</h3><p>' + esc(b.zatsudan) + '</p>' : '') +
-        (b.chinami ? '<h3>🔍 ちなみに</h3><p>' + esc(b.chinami) + '</p>' : '');
+        (b.chinami ? '<h3>🔍 ちなみに</h3><p>' + esc(b.chinami) + '</p>' : '') +
+        (b.comment ? '<h3>🗣 クロコのコメント</h3><p>' + esc(b.comment) + '</p>' : '');
     } else if (it.kind === '🎁') {
       // 🎁：どんな作品？／なぜ合いそう？／最初の一歩／どこで見る＋下に控え2本（軽め・🔥か📼）
       var d = it.done || {};
