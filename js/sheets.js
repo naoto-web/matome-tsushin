@@ -74,7 +74,19 @@ var Sheets = (function () {
       (it.url ? '<a class="btn wide" href="' + esc(it.url) + '" target="_blank" rel="noopener">' + (it.kind === '🎁' ? placeLink : '元の記事へ') + '</a>' : '') +
       '<button class="btn sub' + (it.fb === 'good' ? ' on' : '') + '" data-fb="good">👍</button>' +
       '<button class="btn sub' + (it.fb === 'bad' ? ' on' : '') + '" data-fb="bad">👎</button></div>';
+    // 🎁（デート以外）の一番下＝読んでいて「これも好きだった」と思い出したとき用の入口（suki.js）
+    var sukiKind = '';
+    if (it.kind === '🎁' && UI.ipponWaku(it) !== 'デート') {
+      var sr = String((it.body || {}).shurui || '');
+      sukiKind = UI.ipponWaku(it) === '曲' ? '歌手' : /ドラマ/.test(sr) ? 'ドラマ' : /漫画/.test(sr) ? '漫画' : /YouTube/.test(sr) ? 'YouTube' : '映画';
+      html += '<div class="row"><button class="btn sub wide" data-suki-open>💗 好きなものを思い出したら足す</button></div>';
+    }
     var sh = UI.openSheet(html, onClose);
+    var sukiBtn = sh.querySelector('[data-suki-open]');
+    if (sukiBtn) sukiBtn.addEventListener('click', function () {
+      UI.closeSheet();
+      Suki.openAdd(sukiKind);
+    });
     sh.querySelectorAll('[data-fb]').forEach(function (btn) {
       btn.addEventListener('click', function () {
         var good = btn.dataset.fb === 'good';
