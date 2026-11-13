@@ -164,6 +164,16 @@ a.btn { display: inline-block; }
 .plan-day b { display: inline-block; margin-left: 4px; font-size: 10px; color: #fff; background: var(--accent); border-radius: 4px; padding: 0 4px; }
 .plan-items { flex: 1; min-width: 0; }
 .plan-items span { display: inline-block; width: 3.6em; color: var(--fg-faint); font-size: 12px; }
+/* 💗好きなもの（設定タブの🎁おすすめの箱の中・🎁カードから開くシート） */
+.suki-row { display: flex; gap: 6px; }
+.suki-row select { flex: none; padding: 8px; font-size: 14px; }
+.suki-row input { flex: 1; min-width: 0; }
+.suki-group { padding: 8px 0 4px; border-top: 1px solid var(--line); margin-top: 8px; }
+.suki-kind-name { font-size: 12px; font-weight: 700; color: var(--fg-dim); margin-bottom: 5px; }
+.suki-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.suki-chip { display: inline-flex; align-items: center; background: var(--ippon-soft); border: 1px solid #eab3cc; border-radius: 999px; padding: 1px 2px 1px 10px; font-size: 13px; }
+.suki-chip button { border: none; background: none; color: var(--fg-dim); font-size: 16px; line-height: 1; padding: 4px 8px; }
+.suki-added { margin-top: 8px; }
 .srcs { margin: 0 0 6px 10px; padding-left: 10px; border-left: 2px solid var(--line); }
 .srcs .grow { font-size: 13px; }
 .switch { position: relative; width: 44px; height: 26px; flex: none; }
