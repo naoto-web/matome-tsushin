@@ -155,6 +155,7 @@ a.btn { display: inline-block; }
 .grow .name { flex: 1; min-width: 0; }
 .grow .name small { display: block; color: var(--fg-faint); font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .grow .more { border: none; background: none; color: var(--accent); font-size: 13px; }
+.grow select { flex: none; padding: 6px 8px; font-size: 14px; }
 .srcs { margin: 0 0 6px 10px; padding-left: 10px; border-left: 2px solid var(--line); }
 .srcs .grow { font-size: 13px; }
 .switch { position: relative; width: 44px; height: 26px; flex: none; }
