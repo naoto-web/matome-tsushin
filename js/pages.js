@@ -110,11 +110,11 @@ var Settings = (function () {
   var FREQ_LABEL = [['週2', '週2回（火・金）'], ['毎週', '毎週（金）'], ['隔週', '2週に1回'], ['月1', '月1回'], ['オフ', 'オフ']];
   // 種類ごとの出し方。必ず＝その枠が出る日は毎回／順番＝順番の中から1回に1つ
   var MODE_LABEL = [['必ず', '毎回必ず'], ['順番', '順番で'], ['オフ', 'オフ']];
-  // デートだけ別＝デートの6日前の金曜に出る。追加＝ほかとは別に出す／代わり＝その日の順番の1つの代わりに出す
-  var DATE_LABEL = [['追加', '追加で出す'], ['代わり', '順番の代わり'], ['オフ', 'オフ']];
+  // 💑デートは自分の枠（11/13〜）＝頻度だけ選ぶ。次のデートの日が14日以内のときだけ出る
   var OSU = [
-    { key: 'futari', name: '🎁 ふたりで見る1本', kinds: [['eiga', '🎬 映画'], ['drama', '📺 ドラマ'], ['date', '💑 デートの行き先']] },
+    { key: 'futari', name: '🎁 ふたりで見る1本', kinds: [['eiga', '🎬 映画'], ['drama', '📺 ドラマ']] },
     { key: 'hitori', name: '🎁 ひとりで見る1本', kinds: [['manga', '📚 漫画'], ['youtube', '▶️ YouTube']] },
+    { key: 'date', name: '💑 デートの行き先', kinds: [] },
     { key: 'kyoku', name: '🎵 今週の1曲', kinds: [] }
   ];
 
@@ -130,11 +130,11 @@ var Settings = (function () {
     if (!o || !o.mode) return '';
     var html = '<div class="box"><h2>🎁 おすすめ（今週の1本）</h2><div class="note">18時の回に出ます。変えると、下の「これからの予定」がその場で変わります。</div>';
     OSU.forEach(function (c) {
-      html += '<div class="grow"><div class="name">' + esc(c.name) + '</div>' + osuSelect(c.key, FREQ_LABEL, o.freq[c.key]) + '</div>';
+      var dateNote = (c.key === 'date' && o.dates.length) ? '<small>次のデート：' + esc(o.dates.join('・')) + '</small>' : '';
+      html += '<div class="grow"><div class="name">' + esc(c.name) + dateNote + '</div>' + osuSelect(c.key, FREQ_LABEL, o.freq[c.key]) + '</div>';
       if (c.kinds.length) {
         html += '<div class="srcs">' + c.kinds.map(function (k) {
-          return '<div class="grow"><div class="name">' + esc(k[1]) + '</div>' +
-            osuSelect(k[0], k[0] === 'date' ? DATE_LABEL : MODE_LABEL, o.mode[k[0]]) + '</div>';
+          return '<div class="grow"><div class="name">' + esc(k[1]) + '</div>' + osuSelect(k[0], MODE_LABEL, o.mode[k[0]]) + '</div>';
         }).join('') + '<div class="rule">📋 ' + esc(o.rule[c.key]) + '</div></div>';
       }
     });
@@ -149,7 +149,8 @@ var Settings = (function () {
         }).join('') + '</div></div>';
     });
     html += '<div class="note">「毎回必ず」＝その枠が出る日は毎回出ます。「順番で」＝順番の中から1回に1つ出ます。' +
-      'デートの行き先は、デートの6日前の金曜に出ます' + (o.dates.length ? '（次のデート：' + esc(o.dates.join('・')) + '）' : '') + '。</div></div>';
+      'デートの行き先は、次のデートの日が14日以内のときだけ出ます（年末年始など間があく時期はお休み）。' +
+      '🎮流行りの遊びは予定には出ません（カードの中の控えに入ります）。</div></div>';
     return html;
   }
 
