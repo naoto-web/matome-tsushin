@@ -150,7 +150,9 @@ var Settings = (function () {
     });
     html += '<div class="note">「毎回必ず」＝その枠が出る日は毎回出ます。「順番で」＝順番の中から1回に1つ出ます。' +
       'デートの行き先は、次のデートに向けた案が毎回ちがう内容で出ます。' +
-      '🎮流行りの遊びは予定には出ません（カードの中の控えに入ります）。</div></div>';
+      '🎮流行りの遊びは予定には出ません（カードの中の控えに入ります）。</div>';
+    // 💗好きなもの（suki.js）＝🎁を選ぶ材料。GASが古い版で suki が無いときは出ない
+    html += Suki.boxHtml(data.suki) + '</div>';
     return html;
   }
 
@@ -184,6 +186,8 @@ var Settings = (function () {
         : '<div class="note">まだありません。👍👎・あとで見る・ひとことがたまると、⭐🐟を書く前にクロコがここを書き直します。</div>') + '</div>';
     el.innerHTML = html;
   }
+
+  Suki.bind(el, function (list) { data.suki = list; render(); });
 
   el.addEventListener('click', function (e) {
     var b = e.target.closest('[data-open]');
