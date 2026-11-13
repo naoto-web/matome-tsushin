@@ -106,8 +106,44 @@ var Settings = (function () {
     return '<label class="switch"><input type="checkbox" ' + attrs + (on ? ' checked' : '') + '><i></i></label>';
   }
 
+  // 🎁今週の1本の頻度と種類（シート「おすすめ設定」＝18時の回がこれを読んで出す日を決める）
+  var FREQ_LABEL = [['週2', '週2回（火・金）'], ['毎週', '毎週（金）'], ['隔週', '2週に1回'], ['月1', '月1回'], ['オフ', 'オフ']];
+  var OSU = [
+    { key: 'futari', name: '🎁 ふたりで見る1本', kinds: [['eiga', '🎬 映画'], ['drama', '📺 ドラマ'], ['date', '💑 デートの行き先']] },
+    { key: 'hitori', name: '🎁 ひとりで見る1本', kinds: [['manga', '📚 漫画'], ['youtube', '▶️ YouTube']] },
+    { key: 'kyoku', name: '🎵 今週の1曲', kinds: [] }
+  ];
+
+  function osuNext(o, c) {
+    if (o.freq[c.key] === 'オフ') return '出しません';
+    if (c.key === 'futari' && !o.on.eiga && !o.on.drama) return o.on.date ? 'デートの前の金曜だけ出ます' : '出しません（種類が全部オフ）';
+    if (c.key === 'hitori' && !o.on.manga && !o.on.youtube) return '出しません（種類が全部オフ）';
+    return o.next[c.key] ? '次は ' + o.next[c.key] + ' 18時ごろ' : '';
+  }
+
+  function osusumeHtml() {
+    var o = data.osusume;
+    if (!o) return '';
+    var html = '<div class="box"><h2>🎁 おすすめ（今週の1本）</h2><div class="note">18時の回に出ます。変えると次の18時の回から反映されます。</div>';
+    OSU.forEach(function (c) {
+      html += '<div class="grow"><div class="name">' + esc(c.name) + '<small>' + esc(osuNext(o, c)) + '</small></div>' +
+        '<select data-osu-freq="' + c.key + '">' + FREQ_LABEL.map(function (f) {
+          return '<option value="' + f[0] + '"' + (o.freq[c.key] === f[0] ? ' selected' : '') + '>' + f[1] + '</option>';
+        }).join('') + '</select></div>';
+      if (c.kinds.length) {
+        html += '<div class="srcs">' + c.kinds.map(function (k) {
+          return '<div class="grow"><div class="name">' + esc(k[1]) + '</div>' + sw('data-osu-on="' + k[0] + '"', o.on[k[0]]) + '</div>';
+        }).join('') + '</div>';
+      }
+    });
+    html += '<div class="grow"><div class="name">🎮 流行りの遊び<small>控えの「🔥今の流行り」に出ることがあります</small></div>' + sw('data-osu-on="asobi"', o.on.asobi) + '</div>';
+    html += '<div class="note">💑 デートの6日前の金曜は、ふたりの頻度に関係なくデートの行き先が出ます（デートがオンで、ふたりがオフでないとき）。</div></div>';
+    return html;
+  }
+
   function render() {
-    var html = '<div class="box"><h2>ジャンル</h2><div class="note">オフにすると新着に出なくなります。名前を押すと集め先が見られます。</div>';
+    var html = osusumeHtml();
+    html += '<div class="box"><h2>ジャンル</h2><div class="note">オフにすると新着に出なくなります。名前を押すと集め先が見られます。</div>';
     data.genres.forEach(function (g) {
       var srcs = data.sources.filter(function (s) { return s.genre === g.key; });
       var onCount = srcs.filter(function (s) { return s.on; }).length;
@@ -161,8 +197,18 @@ var Settings = (function () {
 
   el.addEventListener('change', function (e) {
     var t = e.target;
+    if (t.dataset.osuFreq || t.dataset.osuOn) {
+      var osuKey = t.dataset.osuFreq || t.dataset.osuOn;
+      var osuValue = t.dataset.osuFreq ? t.value : t.checked;
+      API.call('setOsusume', { item: osuKey, value: osuValue }).then(function (res) {
+        data.osusume = res.osusume;
+        render();
+        UI.toast('変えました（次の18時の回から）');
+      }).catch(function (err) { UI.toast(err.message); load(); });
+      return;
+    }
     if (t.dataset.genre) {
-      API.call('setGenre', { key: t.dataset.genre, on: t.checked }).then(function () {
+      API.call('setGenre', { genre: t.dataset.genre, on: t.checked }).then(function () {
         data.genres.forEach(function (g) { if (g.key === t.dataset.genre) g.on = t.checked; });
         UI.toast(t.checked ? 'オンにしました' : 'オフにしました（次の集めから反映）');
       }).catch(function (err) { UI.toast(err.message); t.checked = !t.checked; });
