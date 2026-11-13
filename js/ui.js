@@ -68,11 +68,16 @@ var UI = (function () {
 
   function isCrocoCard(it) { return it.kind === '⭐' || it.kind === '🐟' || it.kind === '🎁'; }
 
-  // 🎁の枠＝ふたり（映画・ドラマ・💑）／ひとり（漫画・YouTube）／曲。waku の無い古い行は ふたり
-  function ipponWaku(it) { return (it.body || {}).waku || 'ふたり'; }
+  // 🎁の枠＝ふたり（映画・ドラマ）／ひとり（漫画・YouTube）／デート（💑・11/13〜自分の枠）／曲。waku の無い古い行は ふたり
+  // デートは、中身の書き方がゆれても記事idの末尾 -4 か種類の「デート」で見分ける
+  function ipponWaku(it) {
+    var b = it.body || {};
+    if (/-4[a-z]?$/.test(String(it.id)) || /デート/.test(b.shurui || '')) return 'デート';
+    return b.waku || 'ふたり';
+  }
   function ipponLabel(it) {
     var w = ipponWaku(it);
-    return w === '曲' ? '🎵 今週の1曲' : w === 'ひとり' ? '🎁 ひとりで見る1本' : '🎁 ふたりで見る1本';
+    return w === '曲' ? '🎵 今週の1曲' : w === 'デート' ? '💑 デートの行き先' : w === 'ひとり' ? '🎁 ひとりで見る1本' : '🎁 ふたりで見る1本';
   }
   // 「見た」の言い換え（記録の値は見た のまま）＝💑は行った／🎵は聴いた
   function ipponDid(it) {
