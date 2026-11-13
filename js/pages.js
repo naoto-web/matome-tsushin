@@ -108,36 +108,48 @@ var Settings = (function () {
 
   // 🎁今週の1本の頻度と種類（シート「おすすめ設定」＝18時の回がこれを読んで出す日を決める）
   var FREQ_LABEL = [['週2', '週2回（火・金）'], ['毎週', '毎週（金）'], ['隔週', '2週に1回'], ['月1', '月1回'], ['オフ', 'オフ']];
+  // 種類ごとの出し方。必ず＝その枠が出る日は毎回／順番＝順番の中から1回に1つ
+  var MODE_LABEL = [['必ず', '毎回必ず'], ['順番', '順番で'], ['オフ', 'オフ']];
+  // デートだけ別＝デートの6日前の金曜に出る。追加＝ほかとは別に出す／代わり＝その日の順番の1つの代わりに出す
+  var DATE_LABEL = [['追加', '追加で出す'], ['代わり', '順番の代わり'], ['オフ', 'オフ']];
   var OSU = [
     { key: 'futari', name: '🎁 ふたりで見る1本', kinds: [['eiga', '🎬 映画'], ['drama', '📺 ドラマ'], ['date', '💑 デートの行き先']] },
     { key: 'hitori', name: '🎁 ひとりで見る1本', kinds: [['manga', '📚 漫画'], ['youtube', '▶️ YouTube']] },
     { key: 'kyoku', name: '🎵 今週の1曲', kinds: [] }
   ];
 
-  function osuNext(o, c) {
-    if (o.freq[c.key] === 'オフ') return '出しません';
-    if (c.key === 'futari' && !o.on.eiga && !o.on.drama) return o.on.date ? 'デートの前の金曜だけ出ます' : '出しません（種類が全部オフ）';
-    if (c.key === 'hitori' && !o.on.manga && !o.on.youtube) return '出しません（種類が全部オフ）';
-    return o.next[c.key] ? '次は ' + o.next[c.key] + ' 18時ごろ' : '';
+  function osuSelect(item, labels, value) {
+    return '<select data-osu="' + item + '">' + labels.map(function (f) {
+      return '<option value="' + f[0] + '"' + (value === f[0] ? ' selected' : '') + '>' + f[1] + '</option>';
+    }).join('') + '</select>';
   }
 
   function osusumeHtml() {
     var o = data.osusume;
-    if (!o) return '';
-    var html = '<div class="box"><h2>🎁 おすすめ（今週の1本）</h2><div class="note">18時の回に出ます。変えると次の18時の回から反映されます。</div>';
+    // mode が無い＝GASが古い版のまま。箱は出さない（ほかの設定は使える）
+    if (!o || !o.mode) return '';
+    var html = '<div class="box"><h2>🎁 おすすめ（今週の1本）</h2><div class="note">18時の回に出ます。変えると、下の「これからの予定」がその場で変わります。</div>';
     OSU.forEach(function (c) {
-      html += '<div class="grow"><div class="name">' + esc(c.name) + '<small>' + esc(osuNext(o, c)) + '</small></div>' +
-        '<select data-osu-freq="' + c.key + '">' + FREQ_LABEL.map(function (f) {
-          return '<option value="' + f[0] + '"' + (o.freq[c.key] === f[0] ? ' selected' : '') + '>' + f[1] + '</option>';
-        }).join('') + '</select></div>';
+      html += '<div class="grow"><div class="name">' + esc(c.name) + '</div>' + osuSelect(c.key, FREQ_LABEL, o.freq[c.key]) + '</div>';
       if (c.kinds.length) {
         html += '<div class="srcs">' + c.kinds.map(function (k) {
-          return '<div class="grow"><div class="name">' + esc(k[1]) + '</div>' + sw('data-osu-on="' + k[0] + '"', o.on[k[0]]) + '</div>';
-        }).join('') + '</div>';
+          return '<div class="grow"><div class="name">' + esc(k[1]) + '</div>' +
+            osuSelect(k[0], k[0] === 'date' ? DATE_LABEL : MODE_LABEL, o.mode[k[0]]) + '</div>';
+        }).join('') + '<div class="rule">📋 ' + esc(o.rule[c.key]) + '</div></div>';
       }
     });
-    html += '<div class="grow"><div class="name">🎮 流行りの遊び<small>控えの「🔥今の流行り」に出ることがあります</small></div>' + sw('data-osu-on="asobi"', o.on.asobi) + '</div>';
-    html += '<div class="note">💑 デートの6日前の金曜は、ふたりの頻度に関係なくデートの行き先が出ます（デートがオンで、ふたりがオフでないとき）。</div></div>';
+    html += '<div class="grow"><div class="name">🎮 流行りの遊び<small>控えの「🔥今の流行り」に出ることがあります</small></div>' + sw('data-osu-on="asobi"', o.asobi) + '</div>';
+
+    html += '<h3 class="plan-head">📅 これからの予定</h3>';
+    if (!o.plan.length) html += '<div class="note">出る予定がありません（全部オフです）。</div>';
+    o.plan.forEach(function (p) {
+      html += '<div class="plan"><div class="plan-day">' + esc(p.day) + (p.today ? '<b>今日</b>' : '') + '</div><div class="plan-items">' +
+        p.items.map(function (it) {
+          return '<div><span>' + esc(it.waku) + '</span>' + esc(it.kinds.join(' ＋ ')) + '</div>';
+        }).join('') + '</div></div>';
+    });
+    html += '<div class="note">「毎回必ず」＝その枠が出る日は毎回出ます。「順番で」＝順番の中から1回に1つ出ます。' +
+      'デートの行き先は、デートの6日前の金曜に出ます' + (o.dates.length ? '（次のデート：' + esc(o.dates.join('・')) + '）' : '') + '。</div></div>';
     return html;
   }
 
@@ -197,13 +209,14 @@ var Settings = (function () {
 
   el.addEventListener('change', function (e) {
     var t = e.target;
-    if (t.dataset.osuFreq || t.dataset.osuOn) {
-      var osuKey = t.dataset.osuFreq || t.dataset.osuOn;
-      var osuValue = t.dataset.osuFreq ? t.value : t.checked;
-      API.call('setOsusume', { item: osuKey, value: osuValue }).then(function (res) {
+    if (t.dataset.osu || t.dataset.osuOn) {
+      var osuItem = t.dataset.osu || t.dataset.osuOn;
+      var osuValue = t.dataset.osu ? t.value : t.checked;
+      UI.toast('予定を作り直しています…');
+      API.call('setOsusume', { item: osuItem, value: osuValue }).then(function (res) {
         data.osusume = res.osusume;
         render();
-        UI.toast('変えました（次の18時の回から）');
+        UI.toast('変えました（予定を更新）');
       }).catch(function (err) { UI.toast(err.message); load(); });
       return;
     }
