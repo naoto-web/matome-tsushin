@@ -31,8 +31,7 @@ var Suki = (function () {
   // 設定タブの箱の中に入れるかたまり
   function boxHtml(list) {
     if (!list) return '';
-    return '<h3 class="plan-head">💗 好きなもの</h3>' +
-      '<div class="note">「これも好きだった」と思い出したら足してください。次の18時の回から、選ぶ材料に使います（ここにある作品そのものは出しません）。</div>' +
+    return '<div class="note">「これも好きだった」と思い出したら足してください。次の18時の回から、選ぶ材料に使います（ここにある作品そのものは出しません）。</div>' +
       formHtml() + listHtml(list);
   }
 
