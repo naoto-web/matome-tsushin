@@ -38,6 +38,11 @@ var Sheets = (function () {
           '<button class="btn sub' + (d[w] === '見た' ? ' on' : '') + '" data-done="見た" data-w="' + w + '">' + didBtn + '</button>' +
           '<button class="btn sub' + (d[w] === 'やめた' ? ' on' : '') + '" data-done="やめた" data-w="' + w + '">🙅 やめた</button></div>';
       };
+      // 📌見たいリストに入れる（mitai.js・11/16）＝デートと曲のカードには出さない
+      var mitaiBtn = function (w, small) {
+        if (date || song) return '';
+        return '<div class="row' + (small ? ' small' : '') + '"><button class="btn sub wide" data-mitai-card="' + w + '">📌 見たいリストに入れる（あとで見る用）</button></div>';
+      };
       var hikae = [].concat(b.hikae || []).slice(0, 2);
       html = '<div class="kind-line ippon">' + esc(UI.ipponLabel(it)) + '　' + esc(b.shurui || '') + '</div>' +
         '<h2>' + esc(it.title) + '</h2>' +
@@ -45,20 +50,23 @@ var Sheets = (function () {
         (b.naze ? '<h3>🎯 なぜNaotoに合いそう？</h3><p>' + esc(b.naze) + '</p>' : '') +
         (b.ippo ? '<h3>🚪 最初の一歩</h3><p>' + esc(b.ippo) + '</p>' : '') +
         (b.doko ? '<h3>' + (date ? '🚃 行き方' : song ? '📍 どこで聴く' : '📍 どこで見る') + '</h3><p>' + esc(b.doko) + '</p>' : '') +
+        (b.yomikata ? '<h3>📱 読み方</h3><p>' + esc(b.yomikata) + '</p>' : '') +
+        (b.tsuzuki ? '<h3>📖 続きを読みたくなったら</h3><p>' + esc(b.tsuzuki) + '</p>' : '') +
         (gohan && gohan.name ? '<h3>🍽 セットのご飯屋さん</h3><p><b>' + esc(gohan.name) + '</b>' +
           (gohan.genre || gohan.yosan ? '（' + esc([gohan.genre, gohan.yosan].filter(Boolean).join('・')) + '）' : '') + '</p>' +
           (gohan.naze ? '<p>' + esc(gohan.naze) + '</p>' : '') +
           '<p class="note">' + esc(gohan.eigyo || '') + (gohan.url ? '　<a href="' + esc(gohan.url) + '" target="_blank" rel="noopener">お店のページへ</a>' : '') + '</p>' : '') +
         (b.hyoi ? '<h3>👫 ひょいと</h3><p>' + esc(b.hyoi) + '</p>' : '') +
         '<div class="note">合わなかったら、途中でやめてOK。「やめた」も次の1本選びの材料になります。</div>' +
-        doneBtns('0') +
+        doneBtns('0') + mitaiBtn('0', false) +
         (hikae.length ? '<h3>🔁 気分じゃなければ、こっち</h3>' + hikae.map(function (h, i) {
           return '<div class="hikae">' +
             '<div class="hk-head">' + (h.label ? '<span class="tag">' + esc(h.label) + '</span>' : '') + '<b>' + esc(h.title || '') + '</b></div>' +
             (h.naiyou ? '<p>' + esc(h.naiyou) + '</p>' : '') +
             (h.doko ? '<p class="note">📍 ' + esc(h.doko) + (h.url ? '　<a href="' + esc(h.url) + '" target="_blank" rel="noopener">' + placeLink + '</a>' : '') + '</p>' : '') +
             (h.gohan ? '<p class="note">🍽 ' + esc(h.gohan) + (h.gohanUrl ? '　<a href="' + esc(h.gohanUrl) + '" target="_blank" rel="noopener">お店のページへ</a>' : '') + '</p>' : '') +
-            doneBtns(String(i + 1), true) + '</div>';
+            (h.tsuzuki ? '<p class="note">📖 続き：' + esc(h.tsuzuki) + '</p>' : '') +
+            doneBtns(String(i + 1), true) + mitaiBtn(String(i + 1), true) + '</div>';
         }).join('') : '');
     } else {
       html = '<div class="kind-line uroko">🐟 今日の目からうろこ</div>' +
@@ -86,6 +94,16 @@ var Sheets = (function () {
     if (sukiBtn) sukiBtn.addEventListener('click', function () {
       UI.closeSheet();
       Suki.openAdd(sukiKind);
+    });
+    sh.querySelectorAll('[data-mitai-card]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var w = btn.dataset.mitaiCard;
+        var bb = it.body || {};
+        var h = w === '0' ? null : [].concat(bb.hikae || [])[Number(w) - 1];
+        var title = h ? h.title : it.title;
+        // 🎮流行りの遊びは「その他」に入れる
+        Mitai.addFromCard(/^🎮/.test(title || '') ? '🎮' : bb.shurui, title, h ? h.doko : bb.doko, btn);
+      });
     });
     sh.querySelectorAll('[data-fb]').forEach(function (btn) {
       btn.addEventListener('click', function () {
