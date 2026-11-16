@@ -27,7 +27,7 @@ var Mitai = (function () {
     var sub = s.info ? '📍 ' + s.info.doko : s.done ? s.memo : '🔍 次の18時の回で、あらすじと見られる場所を調べます';
     return '<div class="mitai-item' + (s.done ? ' done' : '') + '"><button class="mitai-name-text" data-mitai-open="' + cur.indexOf(s) + '">' + esc(s.name) +
       (sub ? '<small>' + esc(sub) + '</small>' : '') + '</button>' +
-      '<button class="mitai-btn" data-mitai-done="' + (s.done ? '0' : '1') + '"' + attrs + '>' + (s.done ? '戻す' : '✅ 見た') + '</button>' +
+      '<button class="mitai-btn" data-mitai-done="' + (s.done ? '0' : '1') + '"' + attrs + '>' + (s.done ? '戻す' : '☐ 見た') + '</button>' +
       '<button class="mitai-btn del" data-mitai-del' + attrs + ' aria-label="' + esc(s.name) + 'を消す">×</button></div>';
   }
 
