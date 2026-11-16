@@ -24,11 +24,15 @@ var Mitai = (function () {
 
   function rowHtml(s) {
     var attrs = ' data-shurui="' + esc(s.shurui) + '" data-name="' + esc(s.name) + '"';
-    var sub = s.info ? '📍 ' + s.info.doko : s.done ? s.memo : '🔍 次の18時の回で、あらすじと見られる場所を調べます';
+    var sub = s.done ? (s.state === 'やめた' ? '🚫 やめた' : '✅ 見た') : s.info ? '📍 ' + s.info.doko : '🔍 次の18時の回で、あらすじと見られる場所を調べます';
+    // まだ＝［✅ 見た］［やめた］／見た・やめた＝［戻す］［×］（×は入れ間違いを消す用・11/16 Naoto）
+    var btns = s.done
+      ? '<button class="mitai-btn" data-mitai-state=""' + attrs + '>戻す</button>' +
+        '<button class="mitai-btn del" data-mitai-del' + attrs + ' aria-label="' + esc(s.name) + 'を消す">×</button>'
+      : '<button class="mitai-btn" data-mitai-state="見た"' + attrs + '>✅ 見た</button>' +
+        '<button class="mitai-btn" data-mitai-state="やめた"' + attrs + '>やめた</button>';
     return '<div class="mitai-item' + (s.done ? ' done' : '') + '"><button class="mitai-name-text" data-mitai-open="' + cur.indexOf(s) + '">' + esc(s.name) +
-      (sub ? '<small>' + esc(sub) + '</small>' : '') + '</button>' +
-      '<button class="mitai-btn" data-mitai-done="' + (s.done ? '0' : '1') + '"' + attrs + '>' + (s.done ? '戻す' : '☐ 見た') + '</button>' +
-      '<button class="mitai-btn del" data-mitai-del' + attrs + ' aria-label="' + esc(s.name) + 'を消す">×</button></div>';
+      (sub ? '<small>' + esc(sub) + '</small>' : '') + '</button>' + btns + '</div>';
   }
 
   function groupHtml(list) {
@@ -52,7 +56,7 @@ var Mitai = (function () {
     return '<div class="note">見たい・読みたいと思ったものを入れておく場所です。🎁のカードからも入れられます。ここにある作品は、🎁のおすすめには出しません。</div>' +
       formHtml() +
       (todo.length ? groupHtml(todo) : '<div class="note mitai-empty">まだ何も入っていません。</div>') +
-      (done.length ? '<details class="mitai-done"><summary>見終わったもの（' + done.length + '）</summary>' + groupHtml(done) + '</details>' : '');
+      (done.length ? '<details class="mitai-done"><summary>見た・やめたもの（' + done.length + '）</summary>' + groupHtml(done) + '</details>' : '');
   }
 
   function add(form, onChange) {
@@ -90,12 +94,12 @@ var Mitai = (function () {
       if (op) { var s = cur[Number(op.dataset.mitaiOpen)]; if (s) openDetail(s); return; }
       var addBtn = e.target.closest('[data-mitai-add]');
       if (addBtn) { add(addBtn.closest('.mitai-form'), onChange); return; }
-      var dn = e.target.closest('[data-mitai-done]');
+      var dn = e.target.closest('[data-mitai-state]');
       if (dn) {
         dn.disabled = true;
-        var on = dn.dataset.mitaiDone === '1';
-        API.call('doneMitai', { shurui: dn.dataset.shurui, name: dn.dataset.name, done: on }).then(function (res) {
-          UI.toast(on ? '✅ 見た、にしました' : 'まだ、に戻しました');
+        var st = dn.dataset.mitaiState;
+        API.call('doneMitai', { shurui: dn.dataset.shurui, name: dn.dataset.name, state: st }).then(function (res) {
+          UI.toast(st === '見た' ? '✅ 見た、にしました' : st === 'やめた' ? 'やめた、にしました' : 'まだ、に戻しました');
           onChange(res.mitai);
         }).catch(function (err) { UI.toast(err.message); dn.disabled = false; });
         return;
