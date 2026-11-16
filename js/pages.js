@@ -223,7 +223,7 @@ var Settings = (function () {
     var o = data.osusume;
     // mode が無い＝GASが古い版のまま。箱は出さない（ほかの設定は使える）
     if (!o || !o.mode) return '';
-    var html = '<div class="box"><h2>🎁 おすすめ（今週の1本）</h2><div class="note">18時の回に出ます。変えると、下の「これからの予定」がその場で変わります。</div>';
+    var html = '<div class="note">18時の回に出ます。変えると、下の「これからの予定」がその場で変わります。</div>';
     OSU.forEach(function (c) {
       var dateNote = (c.key === 'date' && o.dates.length) ? '<small>次のデート：' + esc(o.dates.join('・')) + '</small>' : '';
       html += '<div class="grow"><div class="name">' + esc(c.name) + dateNote + '</div>' + osuSelect(c.key, FREQ_LABEL, o.freq[c.key]) + '</div>';
@@ -246,21 +246,29 @@ var Settings = (function () {
     html += '<div class="note">「毎回必ず」＝その枠が出る日は毎回出ます。「順番で」＝順番の中から1回に1つ出ます。' +
       'デートの行き先は、次のデートに向けた案が毎回ちがう内容で出ます。' +
       '🎮流行りの遊びは予定には出ません（カードの中の控えに入ります）。</div>';
-    // 💗好きなもの（suki.js）＝🎁を選ぶ材料。GASが古い版で suki が無いときは出ない
-    html += Suki.boxHtml(data.suki) + '</div>';
-    return html;
+    return fold('osusume', '🎁 おすすめ（今週の1本）', html);
+  }
+
+  // 箱を折りたたむ（11/16 Naoto）＝最初は全部閉じる。開けた箱はこの端末で覚える
+  var folds = {};
+  try { folds = JSON.parse(API.store('mt_fold') || '{}') || {}; } catch (e) { folds = {}; }
+  function fold(key, title, inner) {
+    return '<details class="box fold" data-fold="' + key + '"' + (folds[key] ? ' open' : '') + '><summary>' + esc(title) + '</summary>' + inner + '</details>';
   }
 
   function render() {
     var html = osusumeHtml();
-    html += '<div class="box"><h2>ジャンル</h2><div class="note">オフにすると、そのジャンルの記事を集めなくなります（⭐の材料から外れます）。名前を押すと集め先が見られます。</div>';
+    // 💗好きなもの（suki.js）＝🎁を選ぶ材料／📌見たいもの（mitai.js）。GASが古い版で無いときは出ない
+    if (data.suki) html += fold('suki', '💗 好きなもの（' + data.suki.length + '）', Suki.boxHtml(data.suki));
+    if (data.mitai) html += fold('mitai', '📌 見たいもの（' + Mitai.count(data.mitai) + '）', Mitai.boxHtml(data.mitai));
+    var gh = '<div class="note">オフにすると、そのジャンルの記事を集めなくなります（⭐の材料から外れます）。名前を押すと集め先が見られます。</div>';
     data.genres.forEach(function (g) {
       var srcs = data.sources.filter(function (s) { return s.genre === g.key; });
       var onCount = srcs.filter(function (s) { return s.on; }).length;
-      html += '<div class="grow"><div class="name"><button class="more" data-open="' + esc(g.key) + '">' + esc(g.emoji + ' ' + g.name) + '</button>' +
+      gh += '<div class="grow"><div class="name"><button class="more" data-open="' + esc(g.key) + '">' + esc(g.emoji + ' ' + g.name) + '</button>' +
         '<small>集め先 ' + onCount + 'か所</small></div>' + sw('data-genre="' + esc(g.key) + '"', g.on) + '</div>';
       if (openGenre === g.key) {
-        html += '<div class="srcs">' + srcs.map(function (s) {
+        gh += '<div class="srcs">' + srcs.map(function (s) {
           return '<div class="grow"><div class="name">' + esc(s.name) + '<small>' + esc(s.status || 'まだ集めていない') + (s.memo ? '・' + esc(s.memo) : '') + '</small></div>' +
             sw('data-src-genre="' + esc(s.genre) + '" data-src-url="' + esc(s.url) + '"', s.on) + '</div>';
         }).join('') +
@@ -268,21 +276,29 @@ var Settings = (function () {
           '<button class="btn" data-addsrc="' + esc(g.key) + '">集め先を追加</button></div></div>';
       }
     });
-    html += '</div>';
+    html += fold('genre', 'ジャンル（' + data.genres.length + '）', gh);
 
-    html += '<div class="box"><h2>ジャンルを追加</h2><div class="form">' +
+    html += fold('addgenre', 'ジャンルを追加', '<div class="form">' +
       '<div class="two"><input type="text" id="gEmoji" placeholder="📌" maxlength="4"><input type="text" id="gName" placeholder="名前（例：将棋）"></div>' +
       '<input type="url" id="gUrl" placeholder="集め先のURL（RSS）※わからなければ空でOK">' +
       '<button class="btn" id="gAdd">ジャンルを追加</button>' +
-      '<div class="note">URLがわからないときは、クロコに「○○のジャンル足して」と言えば集め先探しからやります。</div></div></div>';
+      '<div class="note">URLがわからないときは、クロコに「○○のジャンル足して」と言えば集め先探しからやります。</div></div>');
 
-    html += '<div class="box"><h2>🧠 クロコが学んだこと</h2>' +
+    html += fold('konomi', '🧠 クロコが学んだこと',
       (data.konomi ? '<div class="note">更新 ' + esc(data.konomi.updated) + '</div><div class="konomi">' + esc(data.konomi.text) + '</div>'
-        : '<div class="note">まだありません。👍👎・あとで見る・ひとことがたまると、⭐🐟を書く前にクロコがここを書き直します。</div>') + '</div>';
+        : '<div class="note">まだありません。👍👎・あとで見る・ひとことがたまると、⭐🐟を書く前にクロコがここを書き直します。</div>'));
     el.innerHTML = html;
   }
 
   Suki.bind(el, function (list) { data.suki = list; render(); });
+  Mitai.bind(el, function (list) { data.mitai = list; render(); });
+  // 開け閉めを覚える（toggle は上に伝わらないので、つかまえる側で受ける）
+  el.addEventListener('toggle', function (e) {
+    var k = e.target && e.target.dataset ? e.target.dataset.fold : '';
+    if (!k) return;
+    folds[k] = e.target.open;
+    API.store('mt_fold', JSON.stringify(folds));
+  }, true);
 
   el.addEventListener('click', function (e) {
     var b = e.target.closest('[data-open]');
