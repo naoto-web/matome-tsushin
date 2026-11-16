@@ -89,7 +89,8 @@ var Home = (function () {
   function setItems(list) {
     var ids = {};
     list.forEach(function (it) { ids[it.id] = true; });
-    var kept = items.filter(function (it) { return it.read && !ids[it.id]; });
+    // 🎁は残さない（ホームに出すかどうかはGASが決める＝「見た」「やめた」を押したら外れる・11/16）
+    var kept = items.filter(function (it) { return it.read && !ids[it.id] && it.kind !== '🎁'; });
     // 🎁今週の1本はいつも一番上（ふたり→ひとり→デート→曲の順）
     var order = { 'ふたり': 0, 'ひとり': 1, 'デート': 2, '曲': 3 };
     items = list.concat(kept).sort(function (a, b) {
