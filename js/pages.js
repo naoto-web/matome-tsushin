@@ -69,7 +69,12 @@ var Archive = (function () {
   var viewsEl = document.getElementById('archiveViews');
   var moreBtn = document.getElementById('archiveMore');
   // 見方（11/16 整理）＝最初は「読んだ」だけ。読まずに流れた普通の新着は別の見方に分けた
-  var VIEWS = [['read', '読んだ'], ['croco', '⭐ クロコの記事'], ['good', '👍 した'], ['nagare', '読まずに流れた'], ['all', '全部']];
+  var VIEWS = [['read', '読んだ'], ['croco', '⭐ クロコの記事'], ['ippon', '🎁 おすすめ'], ['good', '👍 した'], ['nagare', '読まずに流れた'], ['all', '全部']];
+  // 🎁おすすめの中の種類（11/16）＝出たことのある種類だけボタンにする
+  var KINDS = ['映画', 'ドラマ', '漫画', 'YouTube', 'デート', '曲', 'その他'];
+  var kindsEl = document.getElementById('archiveKinds');
+  var kind = '';
+  var kinds = {};
   var view = 'read';
   var counts = {};
   var total = 0;
@@ -83,12 +88,33 @@ var Archive = (function () {
       return '<button class="chip' + (v[0] === view ? ' on' : '') + '" data-view="' + v[0] + '">' + UI.esc(v[1]) +
         (counts[v[0]] != null ? '<small>' + counts[v[0]] + '</small>' : '') + '</button>';
     }).join('');
+    kindsEl.hidden = view !== 'ippon';
+    if (view !== 'ippon') return;
+    var all = 0;
+    KINDS.forEach(function (k) { all += kinds[k] || 0; });
+    kindsEl.innerHTML = [''].concat(KINDS.filter(function (k) { return kinds[k]; })).map(function (k) {
+      return '<button class="chip' + (k === kind ? ' on' : '') + '" data-kind="' + UI.esc(k) + '">' + UI.esc(k || '全部') +
+        '<small>' + (k ? kinds[k] : all) + '</small></button>';
+    }).join('');
+  }
+
+  // 🎁のカードには「✅ 見た／やめた」を出す（ほかは 既読 などの状態）
+  function stateOf(it) {
+    if (it.kind === '🎁') return UI.ipponState(it) || 'まだ「見た」「やめた」を押していません';
+    return STATE_LABEL[it.state] || it.state;
+  }
+
+  function params(extra) {
+    var p = { view: view, genre: sel.value, q: q.value.trim() };
+    if (view === 'ippon' && kind) p.kind = kind;
+    if (extra) Object.keys(extra).forEach(function (k) { p[k] = extra[k]; });
+    return p;
   }
 
   function render() {
     renderViews();
     info.textContent = total + '件' + (total > items.length ? '（新しい' + items.length + '件を表示）' : '');
-    el.innerHTML = items.length ? items.map(function (it) { return UI.cardHtml(it, { state: STATE_LABEL[it.state] || it.state }); }).join('')
+    el.innerHTML = items.length ? items.map(function (it) { return UI.cardHtml(it, { state: stateOf(it) }); }).join('')
       : '<div class="empty">見つかりませんでした</div>';
     moreBtn.hidden = total <= items.length;
     moreBtn.disabled = false;
@@ -99,6 +125,7 @@ var Archive = (function () {
     items = append ? items.concat(res.items) : res.items;
     total = res.total;
     counts = res.counts || {};
+    if (res.kinds) kinds = res.kinds;
     render();
   }
 
@@ -113,7 +140,7 @@ var Archive = (function () {
     if (!shown) { renderViews(); el.innerHTML = ''; moreBtn.hidden = true; }
     info.textContent = shown ? info.textContent + '・最新を確認中…' : '読み込み中…';
     var def = isDefault();
-    return API.call('archive', { view: view, genre: sel.value, q: q.value.trim() }).then(function (res) {
+    return API.call('archive', params()).then(function (res) {
       if (my !== seq) return;
       take(res, false);
       if (def) API.store(CACHE, JSON.stringify(res));
@@ -124,7 +151,7 @@ var Archive = (function () {
     var my = seq;
     moreBtn.disabled = true;
     moreBtn.textContent = '読み込み中…';
-    API.call('archive', { view: view, genre: sel.value, q: q.value.trim(), offset: items.length }).then(function (res) {
+    API.call('archive', params({ offset: items.length })).then(function (res) {
       if (my !== seq) return;
       take(res, true);
     }).catch(function (err) { UI.toast('読めませんでした：' + err.message); moreBtn.disabled = false; moreBtn.textContent = 'もっと見る'; });
@@ -134,6 +161,13 @@ var Archive = (function () {
     var b = e.target.closest('[data-view]');
     if (!b || b.dataset.view === view) return;
     view = b.dataset.view;
+    kind = '';
+    load();
+  });
+  kindsEl.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-kind]');
+    if (!b || b.dataset.kind === kind) return;
+    kind = b.dataset.kind;
     load();
   });
   moreBtn.addEventListener('click', more);
