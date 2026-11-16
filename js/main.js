@@ -14,6 +14,22 @@ var Main = (function () {
     var bn = document.getElementById('banner');
     bn.hidden = !res.banner;
     bn.textContent = res.banner ? res.banner.text : '';
+    showSouba(res.souba);
+  }
+
+  // 一番上のバーのドル円・日経平均（GASが6・12・18・21時に更新・11/16）。▲は赤・▼は緑（日本の株価表示の慣習）
+  function showSouba(s) {
+    var el = document.getElementById('souba');
+    if (!s || !s.items || !s.items.length) { el.hidden = true; return; }
+    el.hidden = false;
+    el.title = s.updated + ' 更新';
+    el.innerHTML = s.items.map(function (it) {
+      var opt = { minimumFractionDigits: it.digits, maximumFractionDigits: it.digits };
+      var cls = it.diff > 0 ? 'up' : it.diff < 0 ? 'down' : '';
+      var mark = it.diff > 0 ? '▲' : it.diff < 0 ? '▼' : '±';
+      return '<div><span class="nm">' + it.name + '</span>' + Number(it.price).toLocaleString('ja-JP', opt) +
+        ' <b class="' + cls + '">' + mark + Math.abs(it.diff).toLocaleString('ja-JP', opt) + '</b></div>';
+    }).join('');
   }
 
   function showLater() {
