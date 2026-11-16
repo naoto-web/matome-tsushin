@@ -85,6 +85,13 @@ var UI = (function () {
     return /デート/.test((it.body || {}).shurui || '') ? '行った' : '見た';
   }
 
+  // 🎁をホームから外す条件（11/16）＝本命か控えのどれかに「見た」／本命に「やめた」。GAS側の同じ判定＝画面.gs の ipponFinished_
+  function ipponFinished(d) {
+    d = d || {};
+    for (var k in d) if (d[k] === '見た') return true;
+    return d['0'] === 'やめた';
+  }
+
   // 🎁の状態の一言＝見た／やめた／次の1本まで残る
   function ipponState(it) {
     var d = it.done || {};
@@ -93,7 +100,7 @@ var UI = (function () {
     if (vals.indexOf('見た') >= 0) return d['0'] === '見た' ? '✅ ' + did : '✅ 控えを' + did;
     if (d['0'] === 'やめた' && vals.length === 1) return 'やめた（開くと控えが2本あります）';
     if (vals.length) return 'やめた（次の1本の選び方に使います）';
-    return it.read ? '次の1本が届くまでここに残ります' : '';
+    return it.read ? '「見た」か「やめた」を押すと、ホームから外れます' : '';
   }
 
   // カード1枚（ホーム・あとで見る・アーカイブで共通）
@@ -136,5 +143,5 @@ var UI = (function () {
     });
   }
 
-  return { state: state, esc: esc, markFb: markFb, ipponState: ipponState, ipponWaku: ipponWaku, ipponLabel: ipponLabel, ipponDid: ipponDid, relTime: relTime, toast: toast, openSheet: openSheet, closeSheet: closeSheet, genre: genre, isCrocoCard: isCrocoCard, cardHtml: cardHtml };
+  return { state: state, esc: esc, markFb: markFb, ipponState: ipponState, ipponFinished: ipponFinished, ipponWaku: ipponWaku, ipponLabel: ipponLabel, ipponDid: ipponDid, relTime: relTime, toast: toast, openSheet: openSheet, closeSheet: closeSheet, genre: genre, isCrocoCard: isCrocoCard, cardHtml: cardHtml };
 })();
