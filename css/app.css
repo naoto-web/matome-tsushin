@@ -46,6 +46,12 @@ input, select, textarea { font: inherit; color: var(--fg); }
   background: var(--bg); border-bottom: 1px solid var(--line);
 }
 .top h1 { font-size: 18px; margin: 0; letter-spacing: .04em; }
+.souba { margin-left: auto; margin-right: 10px; font-size: 12px; line-height: 1.35; text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.souba .nm { color: var(--fg-dim); margin-right: 5px; }
+.souba b { font-weight: 700; }
+.souba b.up { color: var(--ng); }
+.souba b.down { color: var(--ok); }
+.souba:not([hidden]) + .install-btn { margin-left: 0; }
 .icon-btn { border: 1px solid var(--line); background: var(--panel); border-radius: 10px; width: 38px; height: 34px; font-size: 18px; }
 .install-btn { margin-left: auto; margin-right: 8px; border: 1px solid var(--btn-line); background: var(--btn); color: var(--on-btn); border-radius: 10px; padding: 5px 10px; font-size: 13px; font-weight: 700; }
 .icon-btn.spin { animation: spin 1s linear infinite; }
