@@ -69,7 +69,7 @@ var Archive = (function () {
   var viewsEl = document.getElementById('archiveViews');
   var moreBtn = document.getElementById('archiveMore');
   // 見方（11/16 整理）＝最初は「クロコの記事」（11/16 Naoto・「読んだ」はほぼ同じ中身なので外した）。読まずに流れた普通の新着は別の見方に分けた
-  var VIEWS = [['croco', '⭐ クロコの記事'], ['ippon', '🎁 おすすめ'], ['good', '👍 した'], ['nagare', '読まずに流れた'], ['all', '全部']];
+  var VIEWS = [['croco', '⭐ クロコの記事'], ['ippon', '🎁 おすすめ'], ['good', '👍 した'], ['nagare', '読まずに流れた'], ['all', '全部（昔に開いた新着も）']];
   // 🎁おすすめの中の種類（11/16）＝出たことのある種類だけボタンにする
   var KINDS = ['映画', 'ドラマ', '漫画', 'YouTube', 'デート', '曲', 'その他'];
   var kindsEl = document.getElementById('archiveKinds');
@@ -253,7 +253,7 @@ var Settings = (function () {
 
   function render() {
     var html = osusumeHtml();
-    html += '<div class="box"><h2>ジャンル</h2><div class="note">オフにすると新着に出なくなります。名前を押すと集め先が見られます。</div>';
+    html += '<div class="box"><h2>ジャンル</h2><div class="note">オフにすると、そのジャンルの記事を集めなくなります（⭐の材料から外れます）。名前を押すと集め先が見られます。</div>';
     data.genres.forEach(function (g) {
       var srcs = data.sources.filter(function (s) { return s.genre === g.key; });
       var onCount = srcs.filter(function (s) { return s.on; }).length;
