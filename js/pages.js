@@ -66,6 +66,77 @@ var Archive = (function () {
   var q = document.getElementById('archiveQ');
   var sel = document.getElementById('archiveGenre');
   var timer;
+  var viewsEl = document.getElementById('archiveViews');
+  var moreBtn = document.getElementById('archiveMore');
+  // 見方（11/16 整理）＝最初は「読んだ」だけ。読まずに流れた普通の新着は別の見方に分けた
+  var VIEWS = [['read', '読んだ'], ['croco', '⭐ クロコの記事'], ['good', '👍 した'], ['nagare', '読まずに流れた'], ['all', '全部']];
+  var view = 'read';
+  var counts = {};
+  var total = 0;
+  var seq = 0;
+  var CACHE = 'mt_archive';
+
+  function isDefault() { return view === 'read' && !sel.value && !q.value.trim(); }
+
+  function renderViews() {
+    viewsEl.innerHTML = VIEWS.map(function (v) {
+      return '<button class="chip' + (v[0] === view ? ' on' : '') + '" data-view="' + v[0] + '">' + UI.esc(v[1]) +
+        (counts[v[0]] != null ? '<small>' + counts[v[0]] + '</small>' : '') + '</button>';
+    }).join('');
+  }
+
+  function render() {
+    renderViews();
+    info.textContent = total + '件' + (total > items.length ? '（新しい' + items.length + '件を表示）' : '');
+    el.innerHTML = items.length ? items.map(function (it) { return UI.cardHtml(it, { state: STATE_LABEL[it.state] || it.state }); }).join('')
+      : '<div class="empty">見つかりませんでした</div>';
+    moreBtn.hidden = total <= items.length;
+    moreBtn.disabled = false;
+    moreBtn.textContent = 'もっと見る';
+  }
+
+  function take(res, append) {
+    items = append ? items.concat(res.items) : res.items;
+    total = res.total;
+    counts = res.counts || {};
+    render();
+  }
+
+  // 前回の中身をすぐ出してから、最新を取りに行く（初期の見方だけ控える）
+  function load() {
+    fillGenres();
+    var my = ++seq;
+    var shown = false;
+    if (isDefault()) {
+      try { var c = JSON.parse(API.store(CACHE) || 'null'); if (c) { take(c, false); shown = true; } } catch (e) {}
+    }
+    if (!shown) { renderViews(); el.innerHTML = ''; moreBtn.hidden = true; }
+    info.textContent = shown ? info.textContent + '・最新を確認中…' : '読み込み中…';
+    var def = isDefault();
+    return API.call('archive', { view: view, genre: sel.value, q: q.value.trim() }).then(function (res) {
+      if (my !== seq) return;
+      take(res, false);
+      if (def) API.store(CACHE, JSON.stringify(res));
+    }).catch(function (err) { if (my === seq) info.textContent = '読めませんでした：' + err.message; });
+  }
+
+  function more() {
+    var my = seq;
+    moreBtn.disabled = true;
+    moreBtn.textContent = '読み込み中…';
+    API.call('archive', { view: view, genre: sel.value, q: q.value.trim(), offset: items.length }).then(function (res) {
+      if (my !== seq) return;
+      take(res, true);
+    }).catch(function (err) { UI.toast('読めませんでした：' + err.message); moreBtn.disabled = false; moreBtn.textContent = 'もっと見る'; });
+  }
+
+  viewsEl.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-view]');
+    if (!b || b.dataset.view === view) return;
+    view = b.dataset.view;
+    load();
+  });
+  moreBtn.addEventListener('click', more);
 
   function fillGenres() {
     var cur = sel.value;
@@ -73,16 +144,6 @@ var Archive = (function () {
       return '<option value="' + UI.esc(g.key) + '">' + UI.esc(g.emoji + ' ' + g.name) + '</option>';
     }).join('');
     sel.value = cur;
-  }
-  function load() {
-    fillGenres();
-    info.textContent = '読み込み中…';
-    return API.call('archive', { genre: sel.value, q: q.value.trim() }).then(function (res) {
-      items = res.items;
-      info.textContent = res.total + '件' + (res.total > items.length ? '（新しい' + items.length + '件を表示）' : '');
-      el.innerHTML = items.length ? items.map(function (it) { return UI.cardHtml(it, { state: STATE_LABEL[it.state] || it.state }); }).join('')
-        : '<div class="empty">見つかりませんでした</div>';
-    }).catch(function (err) { info.textContent = '読めませんでした：' + err.message; });
   }
   q.addEventListener('input', function () { clearTimeout(timer); timer = setTimeout(load, 500); });
   sel.addEventListener('change', load);
