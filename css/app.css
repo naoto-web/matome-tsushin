@@ -212,3 +212,5 @@ a.btn { display: inline-block; }
 .mitai-done { margin-top: 10px; }
 .mitai-done > summary { font-size: 12px; color: var(--fg-dim); cursor: pointer; padding: 4px 0; }
 .mitai-empty { margin-top: 8px; }
+button.mitai-name-text { border: none; background: none; padding: 0; text-align: left; font: inherit; color: inherit; cursor: pointer; }
+button.mitai-name-text small { margin-top: 2px; line-height: 1.4; }
