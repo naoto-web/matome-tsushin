@@ -103,7 +103,11 @@ var Sheets = (function () {
         it.done[w] = result;
         UI.closeSheet();
         document.querySelectorAll('.card[data-id="' + String(it.id).replace(/"/g, '') + '"] .state').forEach(function (s) { s.textContent = UI.ipponState(it); });
-        UI.toast(result === '見た' ? didBtn + '、を記録しました' : '🙅 やめた、を記録しました');
+        // 本命か控えに「見た」／本命に「やめた」＝ホームから外す（アーカイブには残る・11/16）
+        var gone = UI.ipponFinished(it.done);
+        var homeIt = gone ? Home.lookup(it.id) : null;
+        if (homeIt) Home.remove(homeIt, document.querySelector('#timeline .card[data-id="' + String(it.id).replace(/"/g, '') + '"]'));
+        UI.toast((result === '見た' ? didBtn : '🙅 やめた') + '、を記録しました' + (homeIt ? '（ホームから外しました）' : ''));
         API.call('ippon', { id: it.id, result: result, w: Number(w), title: h ? h.title : '' }).catch(function (err) { UI.toast('送れませんでした：' + err.message); });
       });
     });
