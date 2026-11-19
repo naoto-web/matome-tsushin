@@ -23,6 +23,27 @@ var Sheets = (function () {
         (b.zatsudan ? '<h3>💬 雑談ネタ</h3><p>' + esc(b.zatsudan) + '</p>' : '') +
         (b.chinami ? '<h3>🔍 ちなみに</h3><p>' + esc(b.chinami) + '</p>' : '') +
         (b.comment ? '<h3>🗣 クロコのコメント</h3><p>' + esc(b.comment) + '</p>' : '');
+    } else if (it.kind === '🦁') {
+      // 🦁学長ライブ（11/19〜）：🗣一言で使うなら／📝今日のまとめ／💰税金の話（全部）／📌そのほか大事な話／ほかに出た話（見出しだけ）
+      // 1件＝{t:"12:29", q:"質問・話題", a:"学長の答え"}。t を押すと動画のその場面へ（アーカイブは5日で消える）
+      var qa = function (list) {
+        return [].concat(list || []).map(function (x) {
+          var sec = 0;
+          String(x.t || '').split(':').forEach(function (n) { sec = sec * 60 + (Number(n) || 0); });
+          var at = x.t ? (it.url ? '<a href="' + esc(it.url + (it.url.indexOf('?') < 0 ? '?' : '&') + 't=' + sec + 's') + '" target="_blank" rel="noopener">▶' + esc(x.t) + '</a>' : esc(x.t)) : '';
+          return '<div class="qa"><div class="q">' + esc(x.q || '') + (at ? '　<span class="at">' + at + '</span>' : '') + '</div>' +
+            lines(x.a).map(function (s) { return '<p>' + esc(s) + '</p>'; }).join('') + '</div>';
+        }).join('');
+      };
+      var zei = [].concat(b.zei || []);
+      html = '<div class="kind-line gakucho">🦁 学長ライブ</div>' +
+        '<h2>' + esc(it.title) + '</h2>' +
+        (b.hitokoto ? '<h3>🗣 一言で使うなら</h3><p>' + esc(b.hitokoto) + '</p>' : '') +
+        (b.matome ? '<h3>📝 今日のまとめ</h3><ul>' + lines(b.matome).map(function (s) { return '<li>' + esc(s) + '</li>'; }).join('') + '</ul>' : '') +
+        '<h3>💰 税金の話（' + zei.length + '件）</h3>' + (zei.length ? qa(zei) : '<p class="note">この日は税金の話は出ませんでした。</p>') +
+        ([].concat(b.daiji || []).length ? '<h3>📌 そのほか大事な話</h3>' + qa(b.daiji) : '') +
+        ([].concat(b.hoka || []).length ? '<h3>💬 ほかに出た話（見出しだけ）</h3><ul>' + [].concat(b.hoka).map(function (s) { return '<li>' + esc(s) + '</li>'; }).join('') + '</ul>' : '') +
+        '<div class="note">自動の字幕から書いた要約です（聞き違いが入ることがあります）。大事な話は▶の場面で確かめる。アーカイブは5日で消えます。</div>';
     } else if (it.kind === '🎁') {
       // 🎁：どんな作品？／なぜ合いそう？／最初の一歩／どこで見る＋下に控え2本（軽め・🔥か📼）
       var d = it.done || {};
@@ -79,7 +100,7 @@ var Sheets = (function () {
         }).join('') + '</ul>' : '');
     }
     html += '<div class="row">' +
-      (it.url ? '<a class="btn wide" href="' + esc(it.url) + '" target="_blank" rel="noopener">' + (it.kind === '🎁' ? placeLink : '元の記事へ') + '</a>' : '') +
+      (it.url ? '<a class="btn wide" href="' + esc(it.url) + '" target="_blank" rel="noopener">' + (it.kind === '🎁' ? placeLink : it.kind === '🦁' ? 'ライブのアーカイブへ' : '元の記事へ') + '</a>' : '') +
       '<button class="btn sub' + (it.fb === 'good' ? ' on' : '') + '" data-fb="good">👍</button>' +
       '<button class="btn sub' + (it.fb === 'bad' ? ' on' : '') + '" data-fb="bad">👎</button></div>';
     // 🎁（デート以外）の一番下＝読んでいて「これも好きだった」と思い出したとき用の入口（suki.js）
