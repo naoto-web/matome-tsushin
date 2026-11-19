@@ -66,7 +66,7 @@ var UI = (function () {
     return { key: key, name: key || 'その他', emoji: '📌' };
   }
 
-  function isCrocoCard(it) { return it.kind === '⭐' || it.kind === '🐟' || it.kind === '🎁'; }
+  function isCrocoCard(it) { return it.kind === '⭐' || it.kind === '🐟' || it.kind === '🎁' || it.kind === '🦁'; }
 
   // 🎁の枠＝ふたり（映画・ドラマ）／ひとり（漫画・YouTube）／デート（💑・11/13〜自分の枠）／曲。waku の無い古い行は ふたり
   // デートは、中身の書き方がゆれても記事idの末尾 -4 か種類の「デート」で見分ける
@@ -107,9 +107,9 @@ var UI = (function () {
   function cardHtml(it, opt) {
     opt = opt || {};
     var g = genre(it.genre);
-    var cls = (it.kind === '⭐' ? ' star' : it.kind === '🐟' ? ' uroko' : it.kind === '🎁' ? ' ippon' : '') + (it.read ? ' read' : '');
+    var cls = (it.kind === '⭐' ? ' star' : it.kind === '🐟' ? ' uroko' : it.kind === '🎁' ? ' ippon' : it.kind === '🦁' ? ' gakucho' : '') + (it.read ? ' read' : '');
     var stateText = opt.state || (it.kind === '🎁' ? ipponState(it) : it.read ? '既読（アプリを閉じるまでここに残ります）' : '');
-    var kind = it.kind === '⭐' ? '⭐ クロコのイチオシ' : it.kind === '🐟' ? '🐟 今日の目からうろこ' : it.kind === '🎁' ? ipponLabel(it) : '';
+    var kind = it.kind === '⭐' ? '⭐ クロコのイチオシ' : it.kind === '🐟' ? '🐟 今日の目からうろこ' : it.kind === '🎁' ? ipponLabel(it) : it.kind === '🦁' ? '🦁 学長ライブ' : '';
     var lead = '';
     if (it.kind === '⭐') {
       var s = it.body.sanko;
@@ -118,8 +118,12 @@ var UI = (function () {
       lead = it.body.naze ? String(it.body.naze).split('\n')[0] : '';
     } else if (it.kind === '🎁') {
       lead = it.body.ippo ? '🚪 ' + it.body.ippo : '';
+    } else if (it.kind === '🦁') {
+      var m = it.body.matome;
+      lead = Array.isArray(m) ? m[0] : (m || '');
     }
     var src = it.kind === '🐟' ? '' : it.kind === '🎁' ? '<span class="src">' + esc(it.body.shurui || '') + '</span>' :
+      it.kind === '🦁' ? '<span class="src">税金の話 ' + [].concat(it.body.zei || []).length + '件</span>' :
       '<span>' + esc(g.emoji) + '</span><span class="src">' + esc(kind ? g.name : it.source) + '</span>';
     return '<article class="card' + cls + '" data-id="' + esc(it.id) + '">' +
       '<div class="meta">' + (kind ? '<span class="kind">' + kind + '</span>' : '') + src +
