@@ -20,6 +20,8 @@
   --uroko-soft: #dff1f2;
   --ippon: #b0306a;
   --ippon-soft: #fbe4ef;
+  --gakucho: #2f6b1f;
+  --gakucho-soft: #e6f3de;
   --ok: #16804a;
   --ng: #c62828;
   --ng-soft: #fbe1e1;
@@ -84,6 +86,9 @@ main { padding: 0 16px; }
 .card.uroko .meta .kind { color: var(--uroko); }
 .card.ippon { background: var(--ippon-soft); border-color: #eab3cc; }
 .card.ippon .meta .kind { color: var(--ippon); }
+/* 🦁学長ライブの要約（11/19〜） */
+.card.gakucho { background: var(--gakucho-soft); border-color: #b7d9a6; }
+.card.gakucho .meta .kind { color: var(--gakucho); }
 /* 🎁は既読でも薄くしない（次の1本が届くまで主役） */
 .card.ippon.read .meta, .card.ippon.read .title, .card.ippon.read .lead { opacity: 1; }
 .card .meta .src { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 55%; }
@@ -138,6 +143,10 @@ textarea { width: 100%; min-height: 64px; resize: vertical; }
 .sheet .kind-line { font-size: 12px; font-weight: 700; color: var(--gold); }
 .sheet .kind-line.uroko { color: var(--uroko); }
 .sheet .kind-line.ippon { color: var(--ippon); }
+.sheet .kind-line.gakucho { color: var(--gakucho); }
+.sheet .qa { border-left: 3px solid #b7d9a6; padding: 2px 0 2px 10px; margin: 10px 0; }
+.sheet .qa .q { font-weight: 700; }
+.sheet .qa .at { font-weight: 400; font-size: 12px; white-space: nowrap; }
 /* 🎁の控え2本（本命より控えめに） */
 .sheet .hikae { border: 1px solid var(--line); background: var(--sunk); border-radius: 10px; padding: 8px 10px; margin-top: 8px; }
 .sheet .hikae .hk-head { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; }
