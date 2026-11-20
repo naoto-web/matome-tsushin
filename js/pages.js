@@ -256,8 +256,17 @@ var Settings = (function () {
     return '<details class="box fold" data-fold="' + key + '"' + (folds[key] ? ' open' : '') + '><summary>' + esc(title) + '</summary>' + inner + '</details>';
   }
 
+  // ✅知ってるかチェックの入口（check.js・11/20）＝折りたたまずに一番上
+  function checkHtml() {
+    var s = data.shitteru;
+    if (!s) return '';
+    return '<div class="box ck-entry"><button class="btn wide" data-check-open>✅ 知ってるかチェック</button>' +
+      '<div class="note">見た・行った・聴いたことがあるものに 💗好き／🙂知ってる／👎苦手 を押すと、🎁に出なくなります。' +
+      (s.cands ? '（' + s.cands + '件中 ' + s.marked + '件 押した）' : '') + '</div></div>';
+  }
+
   function render() {
-    var html = osusumeHtml();
+    var html = checkHtml() + osusumeHtml();
     // 💗好きなもの（suki.js）＝🎁を選ぶ材料／📌見たいもの（mitai.js）。GASが古い版で無いときは出ない
     if (data.suki) html += fold('suki', '💗 好きなもの（' + data.suki.length + '）', Suki.boxHtml(data.suki));
     if (data.mitai) html += fold('mitai', '📌 見たいもの（' + Mitai.count(data.mitai) + '）', Mitai.boxHtml(data.mitai));
@@ -301,6 +310,7 @@ var Settings = (function () {
   }, true);
 
   el.addEventListener('click', function (e) {
+    if (e.target.closest('[data-check-open]')) { Check.open(); return; }
     var b = e.target.closest('[data-open]');
     if (b) { openGenre = openGenre === b.dataset.open ? null : b.dataset.open; render(); return; }
     var add = e.target.closest('[data-addsrc]');
