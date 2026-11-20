@@ -85,11 +85,11 @@ var UI = (function () {
     return /デート/.test((it.body || {}).shurui || '') ? '行った' : '見た';
   }
 
-  // 🎁をホームから外す条件（11/16）＝本命か控えのどれかに「見た」／本命に「やめた」。GAS側の同じ判定＝画面.gs の ipponFinished_
+  // 🎁をホームから外す条件（11/16）＝本命か控えのどれかに「見た」／本命に「やめた」か「知ってた」（11/20）。GAS側の同じ判定＝画面.gs の ipponFinished_
   function ipponFinished(d) {
     d = d || {};
     for (var k in d) if (d[k] === '見た') return true;
-    return d['0'] === 'やめた';
+    return d['0'] === 'やめた' || d['0'] === '知ってた';
   }
 
   // 🎁の状態の一言＝見た／やめた／次の1本まで残る
@@ -98,6 +98,7 @@ var UI = (function () {
     var vals = Object.keys(d).map(function (k) { return d[k]; });
     var did = ipponDid(it);
     if (vals.indexOf('見た') >= 0) return d['0'] === '見た' ? '✅ ' + did : '✅ 控えを' + did;
+    if (d['0'] === '知ってた') return '💡 知ってた（もう出しません）';
     if (d['0'] === 'やめた' && vals.length === 1) return 'やめた（開くと控えが2本あります）';
     if (vals.length) return 'やめた（次の1本の選び方に使います）';
     return it.read ? '「見た」か「やめた」を押すと、ホームから外れます' : '';
