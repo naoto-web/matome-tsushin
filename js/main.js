@@ -74,7 +74,8 @@ var Main = (function () {
   document.querySelector('.tabs').addEventListener('click', function (e) {
     var b = e.target.closest('button[data-tab]');
     if (!b) return;
-    if (b.dataset.tab === tab) { reload(); return; }
+    // ✅知ってるかチェック（check.js）を開いているときは、同じ設定タブを押しても設定に戻す
+    if (b.dataset.tab === tab && document.getElementById('view-check').hidden) { reload(); return; }
     show(b.dataset.tab);
   });
   document.getElementById('reloadBtn').addEventListener('click', reload);
@@ -115,5 +116,5 @@ var Main = (function () {
   }
 
   start();
-  return { bumpLater: bumpLater, reload: reload };
+  return { bumpLater: bumpLater, reload: reload, show: show };
 })();
