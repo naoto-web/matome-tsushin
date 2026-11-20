@@ -57,7 +57,9 @@ var Sheets = (function () {
       var doneBtns = function (w, small) {
         return '<div class="row' + (small ? ' small' : '') + '">' +
           '<button class="btn sub' + (d[w] === '見た' ? ' on' : '') + '" data-done="見た" data-w="' + w + '">' + didBtn + '</button>' +
-          '<button class="btn sub' + (d[w] === 'やめた' ? ' on' : '') + '" data-done="やめた" data-w="' + w + '">🙅 やめた</button></div>';
+          '<button class="btn sub' + (d[w] === 'やめた' ? ' on' : '') + '" data-done="やめた" data-w="' + w + '">🙅 やめた</button>' +
+          // 💡知ってた（11/20）＝もう見た・行った・聴いたことがある。押すと💗🙂👎を選ぶ（check.js）
+          '<button class="btn sub' + (d[w] === '知ってた' ? ' on' : '') + '" data-know data-w="' + w + '">💡 知ってた</button></div>';
       };
       // 📌見たいリストに入れる（mitai.js・11/16）＝デートと曲のカードには出さない
       var mitaiBtn = function (w, small) {
@@ -124,6 +126,31 @@ var Sheets = (function () {
         var title = h ? h.title : it.title;
         // 🎮流行りの遊びは「その他」に入れる
         Mitai.addFromCard(/^🎮/.test(title || '') ? '🎮' : bb.shurui, title, h ? h.doko : bb.doko, btn);
+      });
+    });
+    sh.querySelectorAll('[data-know]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var w = btn.dataset.w || '0';
+        var bb = it.body || {};
+        var h = w === '0' ? null : [].concat(bb.hikae || [])[Number(w) - 1];
+        var title = String(h ? h.title : it.title || '');
+        // 作品名のうしろの（2012年・Netflix）などは外す。種類＝曲／デート／🎮はその他／ほかは本命の種類（控えも同じ種類として扱う）
+        var name = title.replace(/^🎮\s*/, '').replace(/[（(][^（）()]*[）)]\s*$/, '').trim() || title;
+        var waku = UI.ipponWaku(it);
+        var sr = String(bb.shurui || '');
+        var kind = /^🎮/.test(title) ? 'その他' : waku === '曲' ? '曲' : waku === 'デート' ? 'デート' :
+          /ドラマ/.test(sr) ? 'ドラマ' : /漫画/.test(sr) ? '漫画' : /YouTube/i.test(sr) ? 'YouTube' : '映画';
+        UI.closeSheet();
+        Check.choose(name, function (hyoka) {
+          it.done = it.done || {};
+          it.done[w] = '知ってた';
+          document.querySelectorAll('.card[data-id="' + String(it.id).replace(/"/g, '') + '"] .state').forEach(function (s) { s.textContent = UI.ipponState(it); });
+          var homeIt = UI.ipponFinished(it.done) ? Home.lookup(it.id) : null;
+          if (homeIt) Home.remove(homeIt, document.querySelector('#timeline .card[data-id="' + String(it.id).replace(/"/g, '') + '"]'));
+          UI.toast('💡 ' + name + '＝' + (hyoka === '普通' ? '知ってる' : hyoka) + '、を記録しました' + (homeIt ? '（ホームから外しました）' : ''));
+          Check.send({ shurui: kind, name: name, hyoka: hyoka, doko: '🎁カード', id: it.id, w: Number(w), title: name })
+            .catch(function (err) { UI.toast('送れませんでした：' + err.message); });
+        });
       });
     });
     sh.querySelectorAll('[data-fb]').forEach(function (btn) {
