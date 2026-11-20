@@ -48,6 +48,12 @@
   <section id="view-settings" class="view" hidden>
     <div id="settingsBody"></div>
   </section>
+  <!-- ✅知ってるかチェック（check.js・11/20）＝下のタブには出さない。設定タブの一番上の入口から開く -->
+  <section id="view-check" class="view" hidden>
+    <div class="ck-head"><button id="checkBack" class="btn sub">← 設定へ</button><div id="checkInfo" class="info"></div></div>
+    <div id="checkKinds" class="chips"></div>
+    <div id="checkList"></div>
+  </section>
 </main>
 
 <nav class="tabs">
@@ -66,6 +72,7 @@
 <script src="js/ui.js"></script>
 <script src="js/suki.js"></script>
 <script src="js/mitai.js"></script>
+<script src="js/check.js"></script>
 <script src="js/home.js"></script>
 <script src="js/sheets.js"></script>
 <script src="js/pages.js"></script>
