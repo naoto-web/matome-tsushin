@@ -261,7 +261,7 @@ var Settings = (function () {
     var s = data.shitteru;
     if (!s) return '';
     return '<div class="box ck-entry"><button class="btn wide" data-check-open>✅ 知ってるかチェック</button>' +
-      '<div class="note">見た・行った・聴いたことがあるものに 💗好き／🙂知ってる／👎苦手 を押すと、🎁に出なくなります。' +
+      '<div class="note">見た・行った・聴いたことがあるものに 💗好き／🙂知ってる／👎苦手 を押すと、🎁に出なくなります。❓知らない を押したものは🎁の候補になります。📝でひとことも残せます。' +
       (s.cands ? '（' + s.cands + '件中 ' + s.marked + '件 押した）' : '') + '</div></div>';
   }
 
